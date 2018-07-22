@@ -35,6 +35,10 @@ with open(os.path.join(args.out, "wikisearch_entries.csv"), "w") as f_entries,\
                     entry = json.loads(line)
                     # Turn all percentage symbols (e.g %20) into regular ascii (e.g space)
                     entry[ENTRY_TEXT] = unquote(entry[ENTRY_TEXT])
+                    # TODO Need to take care ALSO of http and https links, so they will be substituted by only the description
+                    # TODO Need to take care of escaped characters such as \" etc. (need to see which exist)
+                    # TODO Need to take care of parantheses, other symbols.
+                    # TODO Need to check if we need to remove stuff like paris trips etc.
                     links = set(internal_link_regex.findall(entry[ENTRY_TEXT]))
                     entry[ENTRY_TEXT] = internal_link_regex.sub("\g<1>", entry[ENTRY_TEXT]).replace("\n", " ")
                     f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_ID], entry[ENTRY_URL], entry[ENTRY_TEXT]]) + "\n")

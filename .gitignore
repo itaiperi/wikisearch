@@ -1,3 +1,5 @@
 venv/
 wikiextractor/
 .idea/
+requirements.txt
+*.csv
