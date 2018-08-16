@@ -1,6 +1,4 @@
-from .utils.consts import *
-
-class GraphNode(dict):
+class GraphNode:
     def __init__(self, title, pid, url, text, links):
         self.title = title
         self.pid = pid
@@ -8,8 +6,11 @@ class GraphNode(dict):
         self.text = text
         self.links = links
 
-    def getNeighbors(self):
+    def get_neighbors(self):
         return self.links
 
-    def getText(self):
+    def get_text(self):
         return self.text
+
+    def __hash__(self):
+        return hash(self.title)
