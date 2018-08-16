@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 class Astar():
     def __init__(self, heuristic, strategy, graph):
         self._heuristic = heuristic
@@ -7,11 +9,10 @@ class Astar():
     def run(self, source_title, dest_title):
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(dest_title)
-        print(source_state, dest_state)
 
-        closed_set = {}
-        parents = {}
-        open_set = {source_state: {'f_score': self._heuristic(source_state.get_text(), dest_state.get_text()), 'g_score': 0}}
+        closed_set = OrderedDict()
+        parents = OrderedDict()
+        open_set = OrderedDict([(source_state, {'f_score': self._heuristic(source_state.get_text(), dest_state.get_text()), 'g_score': 0})])
 
         developed = 0
 
