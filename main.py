@@ -17,6 +17,7 @@ if __name__ == '__main__':
     astar = Astar(heuristic, strategy, graph)
 
     path, distance, developed = astar.run(args.source, args.dest)
-    print(path)
-    print(distance)
-    print(developed)
+    print("Path: ", end="")
+    print(*[node._title for node in path], sep=" -> ")
+    print("Distance:", distance)
+    print("Number of nodes developed:", developed)
