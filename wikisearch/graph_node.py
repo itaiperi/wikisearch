@@ -7,7 +7,8 @@ class GraphNode:
         self._links = links
 
     def get_neighbors(self):
-        return self._links
+        for neighbor in self._links:
+            yield neighbor
 
     def get_text(self):
         return self._text
