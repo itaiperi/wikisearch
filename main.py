@@ -1,9 +1,9 @@
 import argparse
 
-from astar import Astar
-from graph import WikiGraph
-from heuristics import bfs_heuristic
-from strategies.default_astar_strategy import DefaultAstarStrategy
+from wikisearch.astar import Astar
+from wikisearch.graph import WikiGraph
+from wikisearch.heuristics import bfs_heuristic
+from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

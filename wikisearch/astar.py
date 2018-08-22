@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+
 class Astar():
     def __init__(self, heuristic, strategy, graph):
         self._heuristic = heuristic

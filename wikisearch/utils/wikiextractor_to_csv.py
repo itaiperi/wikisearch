@@ -4,12 +4,7 @@ import os
 from urllib.parse import unquote
 import re
 import time
-
-ENTRY_TITLE = "title"
-ENTRY_URL = "url"
-ENTRY_ID = "id"
-ENTRY_TEXT = "text"
-CSV_SEPARATOR = "\t"
+from .consts import *
 
 
 parser = argparse.ArgumentParser()
@@ -18,13 +13,11 @@ parser.add_argument("-o", "--out", required=True, help="Output dir")
 
 args = parser.parse_args()
 # Find all links which are internal (skip http and https links)
-internal_link_regex = re.compile("<a href=\"(?!(?:https?://))(.*?)\">.*?</a>")
+internal_link_regex = re.compile("<a href=\"(?!(?:https?://))(?P<title>.*?)\">(?P<text>.*?)</a>")
 start = time.time()
 
-with open(os.path.join(args.out, "wikisearch_entries.csv"), "w") as f_entries,\
-        open(os.path.join(args.out, "wikisearch_links.csv"), "w") as f_links:
-    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_ID, ENTRY_URL, ENTRY_TEXT]) + "\n")
-    f_links.write(CSV_SEPARATOR.join(["source", "target"]) + "\n")
+with open(os.path.join(args.out, "wikisearch.csv"), "w") as f_entries:
+    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_ID, ENTRY_URL, ENTRY_TEXT, ENTRY_LINKS]) + "\n")
 
     for d in sorted(os.listdir(args.dir)):
         d_path = os.path.join(args.dir, d)
@@ -37,12 +30,17 @@ with open(os.path.join(args.out, "wikisearch_entries.csv"), "w") as f_entries,\
                     entry[ENTRY_TEXT] = unquote(entry[ENTRY_TEXT])
                     # TODO Need to take care ALSO of http and https links, so they will be substituted by only the description
                     # TODO Need to take care of escaped characters such as \" etc. (need to see which exist)
-                    # TODO Need to take care of parantheses, other symbols.
+                    # TODO Need to take care of parentheses, other symbols.
                     # TODO Need to check if we need to remove stuff like paris trips etc.
-                    links = set(internal_link_regex.findall(entry[ENTRY_TEXT]))
-                    entry[ENTRY_TEXT] = internal_link_regex.sub("\g<1>", entry[ENTRY_TEXT]).replace("\n", " ")
-                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_ID], entry[ENTRY_URL], entry[ENTRY_TEXT]]) + "\n")
-                    f_links.writelines([CSV_SEPARATOR.join([entry[ENTRY_TITLE], link]) + "\n" for link in links])
+                    # Extract internal links from text
+                    links = set([m.group('title') for m in internal_link_regex.finditer(entry[ENTRY_TEXT])])
+                    # Substitute line breaks with spaces
+                    entry[ENTRY_TEXT] = entry[ENTRY_TEXT].replace("\n", " ")
+                    # Substitute internal links with their representive text
+                    entry[ENTRY_TEXT] = internal_link_regex.sub("\g<text>", entry[ENTRY_TEXT])
 
+                    # Write entry to CSV
+                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_ID], entry[ENTRY_URL], entry[ENTRY_TEXT],
+                                                        LINKS_SEPARATOR.join(links)]) + "\n")
 
 print("Processing took {} seconds".format(int(time.time() - start)))
