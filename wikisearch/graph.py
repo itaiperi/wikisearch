@@ -13,7 +13,7 @@ entries = db.get_collection("pages")
 
 class WikiGraph(dict):
     def __init__(self):
-        super()
+        super(WikiGraph, self).__init__()
         wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
         self.connection = MongoClient()
         self.db = connection.get_database(wiki_lang)
