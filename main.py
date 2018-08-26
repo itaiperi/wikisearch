@@ -10,6 +10,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--source', required=True, help="Source title")
     parser.add_argument('-d', '--dest', required=True, help="Destination title")
+    parser.add_argument('-t', '--time_limit', type=float, default=60,
+                        help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
     wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 
@@ -18,7 +20,7 @@ if __name__ == '__main__':
     graph = WikiGraph(wiki_lang)
     astar = Astar(heuristic, strategy, graph)
 
-    path, distance, developed = astar.run(args.source, args.dest)
+    path, distance, developed = astar.run(args.source, args.dest, args.time_limit)
     print("Path: ", end="")
     print(*[node._title for node in path], sep=" -> ")
     print("Distance:", distance)
