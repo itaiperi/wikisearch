@@ -1,3 +1,4 @@
+import time
 from collections import OrderedDict
 
 
@@ -7,7 +8,7 @@ class Astar():
         self._strategy = strategy
         self._graph = graph
 
-    def run(self, source_title: str, dest_title: str) -> (list, int, int):
+    def run(self, source_title: str, dest_title: str, time_limit: float=None) -> (list, int, int):
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(dest_title)
 
@@ -16,8 +17,9 @@ class Astar():
         open_set = OrderedDict([(source_state, {'f_score': self._heuristic(source_state.text, dest_state.text), 'g_score': 0})])
 
         developed = 0
+        start_time = time.time()
 
-        while open_set:
+        while open_set and ((time_limit is None) or (time.time() - start_time < time_limit)):
             next_state, g_score = self._strategy.get_next_state(open_set)
             closed_set[next_state] = g_score
             del open_set[next_state]
@@ -43,7 +45,7 @@ class Astar():
                         open_set[succ_state] = {'f_score': new_g + self._heuristic(succ_state.text, dest_state.text), 'g_score': new_g}
 
         # Reach here if there's no path between source and destination
-        return None, -1, -1
+        return None, -1, developed
 
     @staticmethod
     def _reconstruct_path(parents, dest_state):

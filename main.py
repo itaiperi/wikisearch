@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     heuristic = bfs_heuristic
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph()
+    graph = WikiGraph(wiki_lang)
     astar = Astar(heuristic, strategy, graph)
 
     path, distance, developed = astar.run(args.source, args.dest)

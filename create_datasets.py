@@ -1,6 +1,7 @@
 import argparse
 import os
 import random
+import time
 
 import pandas as pd
 
@@ -15,6 +16,8 @@ if __name__ == '__main__':
                         type=int, required=True)
     parser.add_argument('-s', '--seed', help="Random seed", type=int)
     parser.add_argument('-o', '--out', help="Output dir path", required=True)
+    parser.add_argument('-t', '--time_limit', type=float, default=60,
+                        help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
     wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 
@@ -22,7 +25,7 @@ if __name__ == '__main__':
 
     heuristic = bfs_heuristic
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph()
+    graph = WikiGraph(wiki_lang)
     astar = Astar(heuristic, strategy, graph)
 
     graph_keys = sorted(graph.keys())
@@ -31,7 +34,8 @@ if __name__ == '__main__':
         dataset = []
         for i in range(args.num_records[i]):  # Training set
             source, dest = rnd_generator.sample(graph_keys, 2)
-            _, distance, _ = astar.run(source, dest)
+            _, distance, developed = astar.run(source, dest, args.time_limit)
+            print(source, dest, distance, developed, sep="\t")
             dataset.append((source, dest, distance))
 
         # Create dataframe from dataset
