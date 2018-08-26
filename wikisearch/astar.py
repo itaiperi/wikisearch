@@ -7,7 +7,7 @@ class Astar():
         self._strategy = strategy
         self._graph = graph
 
-    def run(self, source_title, dest_title):
+    def run(self, source_title: str, dest_title: str) -> (list, int, int):
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(dest_title)
 
@@ -41,6 +41,9 @@ class Astar():
                     else:
                         parents[succ_state] = next_state
                         open_set[succ_state] = {'f_score': new_g + self._heuristic(succ_state.text, dest_state.text), 'g_score': new_g}
+
+        # Reach here if there's no path between source and destination
+        return None, -1, -1
 
     @staticmethod
     def _reconstruct_path(parents, dest_state):
