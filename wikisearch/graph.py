@@ -7,9 +7,8 @@ from wikisearch.utils.consts import ENTRY_TITLE, ENTRY_PID, ENTRY_TEXT, ENTRY_LI
 
 
 class WikiGraph(dict):
-    def __init__(self):
+    def __init__(self, wiki_lang):
         super(WikiGraph, self).__init__()
-        wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
         self._connection = MongoClient()
         self._db = self._connection.get_database(wiki_lang)
         self._pages_collection = self._db.get_collection("pages")

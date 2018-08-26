@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from wikisearch.astar import Astar
 from wikisearch.graph import WikiGraph
@@ -10,6 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--source', required=True, help="Source title")
     parser.add_argument('-d', '--dest', required=True, help="Destination title")
     args = parser.parse_args()
+    wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 
     heuristic = bfs_heuristic
     strategy = DefaultAstarStrategy()
