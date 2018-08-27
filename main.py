@@ -3,7 +3,7 @@ import os
 
 from wikisearch.astar import Astar
 from wikisearch.graph import WikiGraph
-from wikisearch.heuristics import bfs_heuristic
+from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
 from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 
-    heuristic = bfs_heuristic
+    heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph(wiki_lang)
     astar = Astar(heuristic, strategy, graph)

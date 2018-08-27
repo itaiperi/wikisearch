@@ -6,7 +6,7 @@ import pandas as pd
 
 from wikisearch.astar import Astar
 from wikisearch.graph import WikiGraph
-from wikisearch.heuristics.bfs_heuristic import bfs_heuristic
+from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
 from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
 
 if __name__ == '__main__':
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     rnd_generator = random.Random(args.seed)  # If args.seed is None, system's time is used (default behavior)
 
-    heuristic = bfs_heuristic
+    heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph(wiki_lang)
     astar = Astar(heuristic, strategy, graph)
