@@ -18,6 +18,6 @@ if __name__ == '__main__':
 
     path, distance, developed = astar.run(args.source, args.dest)
     print("Path: ", end="")
-    print(*[node._title for node in path], sep=" -> ")
+    print(*[node.title for node in path], sep=" -> ")
     print("Distance:", distance)
     print("Number of nodes developed:", developed)
