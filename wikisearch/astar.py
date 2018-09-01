@@ -30,7 +30,7 @@ class Astar():
 
             developed += 1
             for succ_state in self._graph.get_node_neighbors(next_state):
-                new_g = closed_set[next_state] + self._cost(next_state, succ_state)
+                new_g = closed_set[next_state] + self._cost.calculate(next_state, succ_state)
                 if succ_state in open_set:
                     if new_g < open_set[succ_state]['g_score']:
                         parents[succ_state] = next_state
