@@ -1,5 +1,3 @@
-import os
-
 from pymongo import MongoClient
 
 from wikisearch.graph_node import GraphNode
@@ -24,6 +22,7 @@ class WikiGraph(dict):
 
     def get_node_neighbors(self, node):
         for link in node.get_neighbors():
-            node = self.get_node(link)
+            # Capitalize because some links are not capitalized in the text, but the actual entries are.
+            node = self.get_node(link.capitalize())
             if node:
-                yield self.get_node(link)
+                yield node
