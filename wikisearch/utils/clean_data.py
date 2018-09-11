@@ -1,6 +1,7 @@
 import os
 import string
 import time
+from multiprocessing.pool import Pool
 
 from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords
@@ -11,6 +12,7 @@ from wikisearch.utils.consts import *
 
 
 def tokenize_text(text):
+    # TODO Need to check if we need to remove stuff like paris trips etc.
     # Splits dashed words
     clean_text = text.replace('-', ' ')
     # Splits to tokens
@@ -46,29 +48,32 @@ def tokenize_links(links):
     return processed_links
 
 
+def clean_page(entry):
+    # print(f"Cleaning: {entry[ENTRY_TITLE]}")
+    return {ENTRY_TITLE: tokenize_text(entry[ENTRY_TITLE]),
+            ENTRY_CATEGORIZES: entry[ENTRY_CATEGORIZES],
+            ENTRY_TEXT: tokenize_text(entry[ENTRY_TEXT]),
+            ENTRY_LINKS: tokenize_links(entry[ENTRY_LINKS]),
+            ENTRY_PID: entry[ENTRY_PID]}
+
+
 class CleanData:
     def __init__(self, wiki_lang):
-        self._connection = MongoClient()
-        self._db = self._connection.get_database(wiki_lang)
-        self._pages_collection = self._db.get_collection("pages")
+        self._mongo_client = MongoClient()
+        self._pages_collection = self._mongo_client.get_database(wiki_lang).get_collection(PAGES)
 
         start = time.time()
-        with open("wikisearch/utils/clean_data.csv", "w", encoding='utf-8') as f_entries:
-            for entry in self._pages_collection.find({"title": "People's Republic of China"}):
-                title, pid, url, text, links = tokenize_text(entry[ENTRY_TITLE]), entry[ENTRY_PID], None, \
-                                                tokenize_text(entry[ENTRY_TEXT]), tokenize_links(entry[ENTRY_LINKS])
-                # TODO Need to check if we need to remove stuff like paris trips etc.
 
-                # Write entry to CSV
-                f_entries.write(f"{ENTRY_TITLE}\n{title}\n\n")
-                f_entries.write(f"{ENTRY_TEXT}\n{str(text)}\n\n")
-                f_entries.write(
-                    f"-----------------------------------------------------------------------------------------\n\n")
+        db_names = self._mongo_client.list_database_names()
+        if CLEAN_WIKI in db_names:
+            self._mongo_client.drop_database(CLEAN_WIKI)
+        clean_wiki = self._mongo_client[CLEAN_WIKI][PAGES]
 
-                f_entries.write(f"{ENTRY_LINKS}\n")
-                f_entries.write(f"{str(links)}\n")
+        with Pool(4) as pool:
+            clean_pages = list(pool.map(clean_page, self._pages_collection.find({})))
 
-        print(f"Processing took {int(time.time() - start)} seconds")
+        clean_wiki.insert_many(clean_pages)
+        print(f"Cleaning took {int(time.time() - start)} seconds")
 
 
 if __name__ == "__main__":
