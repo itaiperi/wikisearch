@@ -17,7 +17,7 @@ internal_link_regex = re.compile("<a href=\"(?!(?:https?://))(?P<title>.*?)\">(?
 start = time.time()
 
 with open(os.path.join(args.out, "wikisearch.csv"), "w") as f_entries:
-    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_ID, ENTRY_URL, ENTRY_TEXT, ENTRY_LINKS]) + "\n")
+    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_PID, ENTRY_URL, ENTRY_TEXT, ENTRY_LINKS]) + "\n")
 
     for d in sorted(os.listdir(args.dir)):
         d_path = os.path.join(args.dir, d)
@@ -36,11 +36,11 @@ with open(os.path.join(args.out, "wikisearch.csv"), "w") as f_entries:
                     links = set([m.group('title') for m in internal_link_regex.finditer(entry[ENTRY_TEXT])])
                     # Substitute line breaks with spaces
                     entry[ENTRY_TEXT] = entry[ENTRY_TEXT].replace("\n", " ")
-                    # Substitute internal links with their representive text
+                    # Substitute internal links with their representative text
                     entry[ENTRY_TEXT] = internal_link_regex.sub("\g<text>", entry[ENTRY_TEXT])
 
                     # Write entry to CSV
-                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_ID], entry[ENTRY_URL], entry[ENTRY_TEXT],
+                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_PID], entry[ENTRY_URL], entry[ENTRY_TEXT],
                                                         LINKS_SEPARATOR.join(links)]) + "\n")
 
 print("Processing took {} seconds".format(int(time.time() - start)))
