@@ -2,6 +2,7 @@ import argparse
 import os
 
 from wikisearch.astar import Astar
+from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
 from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
@@ -15,10 +16,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 
+    cost = UniformCost()
     heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph(wiki_lang)
-    astar = Astar(heuristic, strategy, graph)
+    astar = Astar(cost, heuristic, strategy, graph)
 
     path, distance, developed = astar.run(args.source, args.dest, args.time_limit)
     if path:
