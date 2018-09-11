@@ -15,7 +15,7 @@ class WikiGraph(dict):
             title, pid, url, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), None, entry[ENTRY_TEXT], \
                                            entry[ENTRY_LINKS]
             if title in self:
-                raise ValueError("More than 1 entry with title", title)
+                raise ValueError(f"More than 1 entry with title: {title}")
             self[title] = GraphNode(title, pid, url, text, links)
 
     def get_node(self, title):
@@ -23,7 +23,6 @@ class WikiGraph(dict):
 
     def get_node_neighbors(self, node):
         for link in node.get_neighbors():
-            # Capitalize because some links are not capitalized in the text, but the actual entries are.
-            node = self.get_node(link.capitalize())
+            node = self.get_node(link)
             if node:
                 yield node

@@ -6,6 +6,7 @@ from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
 from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
+from wikisearch.utils.clean_data import tokenize_title
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--time_limit', type=float, default=60,
                         help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
-    wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
+    wiki_lang = os.environ.get("WIKISEARCH_LANG") or "cleanwiki"
 
     cost = UniformCost()
     heuristic = BFSHeuristic()
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     graph = WikiGraph(wiki_lang)
     astar = Astar(cost, heuristic, strategy, graph)
 
-    path, distance, developed = astar.run(args.source, args.dest, args.time_limit)
+    path, distance, developed = astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
     if path:
         print("Path: ", end="")
         print(*[node.title for node in path], sep=" -> ")

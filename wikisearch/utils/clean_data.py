@@ -7,16 +7,15 @@ from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords
 from pymongo import MongoClient
 
-# from consts import *
 from wikisearch.utils.consts import *
 
 
 def tokenize_text(text):
     # TODO Need to check if we need to remove stuff like paris trips etc.
     # Splits dashed words
-    clean_text = text.replace('-', ' ')
+    text = text.replace('-', ' ')
     # Splits to tokens
-    tokens = word_tokenize(clean_text)
+    tokens = word_tokenize(text)
     # Converts each word to lower-case
     tokens = [word.lower() for word in tokens]
     # Removes punctuation from each word
@@ -32,25 +31,28 @@ def tokenize_text(text):
     tokens = [porter.stem(word) for word in tokens]
     # Clears empty words
     tokens = [word for word in tokens if word]
-    return tokens
+    return ' '.join(tokens)
 
 
 def tokenize_links(links):
     # Filters out external wikipedia links titles
     external_links_titles = {"wikt"}
     processed_links = [link for link in links if link not in external_links_titles]
+    # TODO: change later to regex of :.+: - check it first in mongo to see which get hit
     wikt_links = ":wikt:"
     processed_links = [link for link in processed_links if wikt_links not in link]
-    # Tokenizes each link title
-    processed_links = [tokenize_text(link) for link in processed_links]
-    # Clears empty links lists
-    processed_links = [link for link in processed_links if link]
+    # processed_links = [link.lower() for link in processed_links]
     return processed_links
+
+
+def tokenize_title(title):
+    # return title.lower()
+    return title
 
 
 def clean_page(entry):
     # print(f"Cleaning: {entry[ENTRY_TITLE]}")
-    return {ENTRY_TITLE: tokenize_text(entry[ENTRY_TITLE]),
+    return {ENTRY_TITLE: tokenize_title(entry[ENTRY_TITLE]),
             ENTRY_CATEGORIZES: entry[ENTRY_CATEGORIZES],
             ENTRY_TEXT: tokenize_text(entry[ENTRY_TEXT]),
             ENTRY_LINKS: tokenize_links(entry[ENTRY_LINKS]),
@@ -69,7 +71,7 @@ class CleanData:
             self._mongo_client.drop_database(CLEAN_WIKI)
         clean_wiki = self._mongo_client[CLEAN_WIKI][PAGES]
 
-        with Pool(4) as pool:
+        with Pool(6) as pool:
             clean_pages = list(pool.map(clean_page, self._pages_collection.find({})))
 
         clean_wiki.insert_many(clean_pages)
