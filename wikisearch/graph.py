@@ -1,5 +1,3 @@
-import os
-
 from pymongo import MongoClient
 
 from wikisearch.graph_node import GraphNode
@@ -14,9 +12,10 @@ class WikiGraph(dict):
         self._pages_collection = self._db.get_collection("pages")
 
         for entry in self._pages_collection.find({}):
-            title, pid, url, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), None, entry[ENTRY_TEXT], entry[ENTRY_LINKS]
+            title, pid, url, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), None, entry[ENTRY_TEXT], \
+                                           entry[ENTRY_LINKS]
             if title in self:
-                raise ValueError("More than 1 entry with title", title)
+                raise ValueError(f"More than 1 entry with title: {title}")
             self[title] = GraphNode(title, pid, url, text, links)
 
     def get_node(self, title):
@@ -26,4 +25,4 @@ class WikiGraph(dict):
         for link in node.get_neighbors():
             node = self.get_node(link)
             if node:
-                yield self.get_node(link)
+                yield node
