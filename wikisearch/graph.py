@@ -1,22 +1,19 @@
-from pymongo import MongoClient
-
 from wikisearch.graph_node import GraphNode
-from wikisearch.utils.consts import ENTRY_TITLE, ENTRY_PID, ENTRY_TEXT, ENTRY_LINKS
+from wikisearch.utils.consts import *
+from wikisearch.utils.mongo_handler import MongoHandler
 
 
 class WikiGraph(dict):
     def __init__(self, wiki_lang):
         super(WikiGraph, self).__init__()
-        self._connection = MongoClient()
-        self._db = self._connection.get_database(wiki_lang)
-        self._pages_collection = self._db.get_collection("pages")
+        self._mongo_handler = MongoHandler(wiki_lang, PAGES)
 
-        for entry in self._pages_collection.find({}):
-            title, pid, url, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), None, entry[ENTRY_TEXT], \
-                                           entry[ENTRY_LINKS]
+        for entry in self._mongo_handler.get_all_pages():
+            title, pid, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), \
+                                      entry[ENTRY_TEXT], entry[ENTRY_LINKS]
             if title in self:
-                raise ValueError(f"More than 1 entry with title: {title}")
-            self[title] = GraphNode(title, pid, url, text, links)
+                raise ValueError(f"More than 1 entry with title: '{title}'")
+            self[title] = GraphNode(title, pid, text, links)
 
     def get_node(self, title):
         return self.get(title, None)

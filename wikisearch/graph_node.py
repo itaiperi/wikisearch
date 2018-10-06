@@ -1,8 +1,7 @@
 class GraphNode:
-    def __init__(self, title, pid, url, text, links):
+    def __init__(self, title, pid, text, links):
         self._title = title
         self._pid = pid
-        self._url = url
         self._text = text
         self._links = links
 
@@ -13,10 +12,6 @@ class GraphNode:
     @property
     def pid(self):
         return self._pid
-
-    @property
-    def url(self):
-        return self._url
 
     def get_neighbors(self):
         for neighbor in self._links:
