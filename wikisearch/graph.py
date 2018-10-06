@@ -1,5 +1,5 @@
 from wikisearch.graph_node import GraphNode
-from wikisearch.utils.consts import *
+from wikisearch.consts.mongo import *
 from wikisearch.utils.mongo_handler import MongoHandler
 
 

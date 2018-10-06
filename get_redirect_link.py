@@ -1,6 +1,5 @@
 import argparse
 import re
-import os
 
 
 if __name__ == "__main__":
@@ -16,12 +15,12 @@ if __name__ == "__main__":
     title_re = re.compile("<title>(.*)</title>")
 
     if args.file:
-        with open(args.file, 'r') as f:
+        with open(args.file, 'r', encoding='utf-8') as f:
             redirect_entries = [line.replace('\n', '') for line in f.readlines()]
     else:
         redirect_entries = [args.title]
 
-    with open(args.xml, 'r') as f:
+    with open(args.xml, 'r', encoding='utf-8') as f:
         found = False
         title = None
         for line in f.readlines():

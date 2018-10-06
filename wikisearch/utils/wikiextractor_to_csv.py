@@ -1,10 +1,9 @@
 import argparse
 import json
-import os
 from urllib.parse import unquote
 import re
 import time
-from .consts import *
+from wikisearch.consts.mongo import *
 
 
 parser = argparse.ArgumentParser()
@@ -17,7 +16,7 @@ internal_link_regex = re.compile("<a href=\"(?!(?:https?://))(?P<title>.*?)\">(?
 start = time.time()
 
 with open(os.path.join(args.out, "wikisearch.csv"), "w") as f_entries:
-    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_PID, ENTRY_URL, ENTRY_TEXT, ENTRY_LINKS]) + "\n")
+    f_entries.write(CSV_SEPARATOR.join([ENTRY_TITLE, ENTRY_PID, ENTRY_TEXT, ENTRY_LINKS]) + "\n")
 
     for d in sorted(os.listdir(args.dir)):
         d_path = os.path.join(args.dir, d)
@@ -40,7 +39,7 @@ with open(os.path.join(args.out, "wikisearch.csv"), "w") as f_entries:
                     entry[ENTRY_TEXT] = internal_link_regex.sub("\g<text>", entry[ENTRY_TEXT])
 
                     # Write entry to CSV
-                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_PID], entry[ENTRY_URL], entry[ENTRY_TEXT],
+                    f_entries.write(CSV_SEPARATOR.join([entry[ENTRY_TITLE], entry[ENTRY_PID], entry[ENTRY_TEXT],
                                                         LINKS_SEPARATOR.join(links)]) + "\n")
 
 print("Processing took {} seconds".format(int(time.time() - start)))

@@ -2,6 +2,7 @@ import argparse
 import os
 
 from wikisearch.astar import Astar
+from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
@@ -15,12 +16,11 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--time_limit', type=float, default=60,
                         help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
-    wiki_lang = os.environ.get("WIKISEARCH_LANG") or "cleanwiki"
 
     cost = UniformCost()
     heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph(wiki_lang)
+    graph = WikiGraph(WIKI_LANG)
     astar = Astar(cost, heuristic, strategy, graph)
 
     path, distance, developed = astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)

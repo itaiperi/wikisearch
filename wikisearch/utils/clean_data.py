@@ -6,7 +6,7 @@ from multiprocessing.pool import Pool
 from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords
 
-from wikisearch.utils.consts import *
+from wikisearch.consts.mongo import *
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
