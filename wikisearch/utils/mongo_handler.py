@@ -7,7 +7,10 @@ class MongoHandler:
         self._collection = self._mongo_client.get_database(database_name).get_collection(collection_name)
 
     def get_all_pages(self):
-        return self._collection.find({})
+        return self._collection.find()
+
+    def project_page_by_field(self, field_name):
+        return self._collection.find({}, {field_name: True})
 
     """ 
         Creates a new database and a new collection in it.
