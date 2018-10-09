@@ -16,7 +16,7 @@ class DistanceDataset(torch.utils.data.Dataset):
         # self._df = pd.read_csv(self._path, sep=CSV_SEPARATOR)
 
         self._test_tensor = torch.randn(32, 2, 300)
-        self._test_result = torch.Tensor([[2] * 32]).transpose(1, 0)
+        self._test_result = torch.Tensor([[2]] * 32)
 
     def __len__(self):
         # return len(self._df)

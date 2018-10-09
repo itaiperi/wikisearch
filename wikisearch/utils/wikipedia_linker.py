@@ -80,5 +80,3 @@ def build_redirect_pages_lookup_table():
 
 if __name__ == "__main__":
     build_redirect_pages_lookup_table()
-    with open(PATH_TO_REDIRECT_LOOKUP_TABLE, 'rb') as f:
-        redirect_lookup_table = pickle.load(f)
