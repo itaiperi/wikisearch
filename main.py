@@ -1,5 +1,4 @@
 import argparse
-import os
 
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import WIKI_LANG
