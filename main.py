@@ -4,8 +4,8 @@ from wikisearch.astar import Astar
 from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
-from wikisearch.heuristics.bfs_heuristic import BFSHeuristic
-from wikisearch.strategies.default_astar_strategy import DefaultAstarStrategy
+from wikisearch.heuristics import BFSHeuristic
+from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
 
 if __name__ == '__main__':

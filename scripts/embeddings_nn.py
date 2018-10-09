@@ -1,12 +1,12 @@
 import argparse
 
-# from wikisearch.utils.consts import CSV_SEPARATOR
 # import pandas as pd
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
+from wikisearch.heuristics.nn_archs import EmbeddingsDistance
+# from wikisearch.utils.consts import CSV_SEPARATOR
 
 
 class DistanceDataset(torch.utils.data.Dataset):
@@ -15,35 +15,16 @@ class DistanceDataset(torch.utils.data.Dataset):
         self._path = path
         # self._df = pd.read_csv(self._path, sep=CSV_SEPARATOR)
 
-        self._test_tensor = torch.randn(2, 300)
-        self._test_result = torch.Tensor([[2]])
+        self._test_tensor = torch.randn(32, 2, 300)
+        self._test_result = torch.Tensor([[2] * 32]).transpose(1, 0)
 
     def __len__(self):
         # return len(self._df)
-        return 1
+        return self._test_tensor.size(0)
 
     def __getitem__(self, item):
         # return self._df.iloc[item]
-        return self._test_tensor, self._test_result
-
-
-class EmbeddingsDistance(nn.Module):
-    def __init__(self, embed_dim):
-        super(EmbeddingsDistance, self).__init__()
-        self.fc1 = nn.Linear(embed_dim, 128)
-        self.conv1 = nn.Conv1d(2, 32, kernel_size=5)
-        self.conv2 = nn.Conv1d(32, 16, kernel_size=3)
-        self.conv3 = nn.Conv1d(16, 1, kernel_size=1)
-        self.fc3 = nn.Linear(15, 1)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = F.max_pool1d(self.conv1(x), 2)
-        x = F.max_pool1d(self.conv2(x), 2)
-        x = F.max_pool1d(self.conv3(x), 2)
-        x = self.fc3(x)
-
-        return x
+        return self._test_tensor[item], self._test_result[item]
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
@@ -78,17 +59,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-tr', '--train')
     parser.add_argument('-te', '--test')
+    parser.add_argument('-b', '--batch-size', type=int, default=16)
     parser.add_argument('-e', '--epochs', type=int, default=50)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--log-interval', type=int, default=10)
+    parser.add_argument('-o', '--out', required=True)
 
     args = parser.parse_args()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(300).to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train), batch_size=1)
-    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test), batch_size=1)
+    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train), batch_size=args.batch_size)
+    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test), batch_size=args.batch_size)
     for epoch in range(args.epochs):
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
+
+    torch.save(model.state_dict(), args.out)
