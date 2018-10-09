@@ -1,3 +1,5 @@
 import os
 
-PATH_TO_REDIRECT_LOOKUP_TABLE = os.path.join("wikisearch", "pickled_data", "redirect_lookup_table")
+PATH_TO_REDIRECT_LOOKUP_TABLE = os.environ.get("REDIRECT_LOOKUP_TABLE_PATH")
+
+PATH_TO_WORD2VEC_GOOGLE_NEWS_PRETRAINED_MODEL = os.environ.get("PRETRAINED_EMBEDDINGS")
