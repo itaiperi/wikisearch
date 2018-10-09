@@ -10,6 +10,7 @@ class WikiGraph(dict):
     def __init__(self, wiki_lang):
         super(WikiGraph, self).__init__()
         self._mongo_handler = MongoHandler(wiki_lang, PAGES)
+        # TODO: can remove when wtf_wikipedia works with redirect pages
         with open(PATH_TO_REDIRECT_LOOKUP_TABLE, 'rb') as f:
             self.redirect_lookup_table = pickle.load(f)
 

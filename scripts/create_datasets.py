@@ -4,6 +4,7 @@ import random
 
 import pandas as pd
 
+from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 
 rnd_generator = random.Random()
@@ -46,11 +47,9 @@ if __name__ == '__main__':
     if args.max_distance < 1:
         raise ValueError("Distance is not a positive integer")
 
-    wiki_lang = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
-
     rnd_generator.seed(args.seed)  # If args.seed is None, system's time is used (default behavior)
 
-    graph = WikiGraph(wiki_lang)
+    graph = WikiGraph(WIKI_LANG)
     graph_keys = sorted(graph.keys())
 
     for dataset_type, num_records in zip(['train', 'validation', 'test'], args.num_records):

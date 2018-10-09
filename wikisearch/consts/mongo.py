@@ -11,4 +11,5 @@ LINKS_SEPARATOR = ";"
 
 CLEAN_WIKI = "cleanwiki"
 PAGES = "pages"
-WIKI_LANG = os.environ.get("WIKISEARCH_LANG") or "cleanwiki"
+WIKI_LANG = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
+EMBEDDINGS = "embeddings"

@@ -73,5 +73,4 @@ class CleanData:
 
 
 if __name__ == "__main__":
-    wiki_lang_env = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
-    CleanData(wiki_lang_env)
+    CleanData(WIKI_LANG)
