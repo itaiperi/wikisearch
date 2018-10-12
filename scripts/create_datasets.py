@@ -70,6 +70,6 @@ if __name__ == '__main__':
         # Define path to save dataset to
         dataset_path = os.path.abspath(os.path.join(args.out, dataset_type + '.csv'))
         # Save dataset (through dataframe)
-        df.to_csv(dataset_path, header=True, index=False)
+        df.to_csv(dataset_path, header=True, index=False, sep='\t')
 
     print("Dataset created at", os.path.abspath(args.out))

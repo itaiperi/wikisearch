@@ -6,4 +6,4 @@ requirements.txt
 */__pycache__/
 __pycache__/
 node_modules/
-pretrained_models/
+data/

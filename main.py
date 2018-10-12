@@ -1,4 +1,5 @@
 import argparse
+import time
 
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import WIKI_LANG
@@ -22,11 +23,12 @@ if __name__ == '__main__':
     graph = WikiGraph(WIKI_LANG)
     astar = Astar(cost, heuristic, strategy, graph)
 
+    start = time.time()
     path, distance, developed = astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
     if path:
         print("Path: ", end="")
         print(*[node.title for node in path], sep=" -> ")
         print("Distance:", distance)
-        print("Number of nodes developed:", developed)
+        print("Number of nodes developed: {}, Time taken: {:.1f}".format(developed, time.time() - start))
     else:
-        print("Path not found. Number of nodes developed:", developed)
+        print("Path not found. Number of nodes developed: {}, Time taken: {:.1f}".format(developed, time.time() - start))
