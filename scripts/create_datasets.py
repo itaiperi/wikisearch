@@ -110,12 +110,12 @@ if __name__ == '__main__':
         df.to_csv(dataset_path, header=True, index=False, sep='\t')
         runtimes[dataset_type] = time.time() - dataset_start
 
-    statistics_df = pd.DataFrame(columns=['Dataset', 'Number of entries', 'Build\ntime', 'Average build time/entry',
+    statistics_df = pd.DataFrame(columns=['Dataset', 'Number of entries', 'Build time', 'Average build time/entry',
                                           'Min distance', 'Max distance', 'Average distance', 'Standard deviation'])
     for dataset_type, num_records in zip(dataset_types, args.num_records):
         statistics_df = statistics_df.append({'Dataset': dataset_type.capitalize(),
                                               'Number of entries': num_records,
-                                              'Build\ntime': runtimes[dataset_type],
+                                              'Build time': runtimes[dataset_type],
                                               'Average build time/entry': runtimes[dataset_type] / num_records,
                                               'Min distance': np.min(distances[dataset_type]),
                                               'Max distance': np.max(distances[dataset_type]),
