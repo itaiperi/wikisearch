@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import tabulate
 
+from scripts.log_progress import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 
@@ -18,30 +19,8 @@ dataset_types = ['train', 'validation', 'test']
 rnd_generator = random.Random()
 
 
-# Taken from Stack Overflow: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-    """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print('\r%s |%s| %s%% %d/%d %s' % (prefix, bar, percent, iteration, total, suffix), end='\r')
-    # Print New Line on Complete
-    if iteration == total:
-        print()
-
-
 def find_at_distance(graph, source_node, desired_distance):
-    if not len(list(source_node.get_neighbors())):
+    if not list(source_node.get_neighbors()):
         return None, 0
 
     actual_distance = 0
@@ -51,7 +30,8 @@ def find_at_distance(graph, source_node, desired_distance):
     while actual_distance < desired_distance:
         # If neighbor has been found before, then there's a shorter path, and we don't add it to current distance
         next_distance_nodes = {neighbor for node in current_distance_nodes
-                               for neighbor in graph.get_node_neighbors(node) if neighbor not in all_nodes}
+                               for neighbor in graph.get_node_neighbors(node)}
+        next_distance_nodes = next_distance_nodes - all_nodes
         all_nodes.update(next_distance_nodes)
         if next_distance_nodes:
             actual_distance += 1
