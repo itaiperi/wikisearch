@@ -14,5 +14,5 @@ class Embedding(metaclass=ABCMeta):
 
     @abstractmethod
     def embed(self, title):
-        # TODO: get the _id from the wiki database pages collection (keep on consistency)
+        # TODO: get the _id from the wiki database pages collection (keep on consistency), and pass along to _cache
         raise NotImplementedError

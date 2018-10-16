@@ -14,23 +14,19 @@ def tokenize_text(text):
     text = text.replace('–', ' ')
     text = text.replace('-', ' ')
     # Filters out external links
-    text = [word for word in text.split() if "https://" not in word and "http://" not in word]
+    text = ' '.join([word for word in text.split() if "https://" not in word and "http://" not in word])
     # Splits to tokens
-    tokens = word_tokenize(' '.join(text))
+    tokens = word_tokenize(text)
     # Converts each word to lower-case
     tokens = [word.lower() for word in tokens]
-    # Removes punctuation from each word
-    table_of_punctuation = str.maketrans('', '', string.punctuation)
-    tokens = [word.translate(table_of_punctuation) for word in tokens]
-    # Filters out stop words
+    # Removes punctuation, empty and stop words
     stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word not in stop_words]
+    punctuation = set(string.punctuation)
+    punc_and_stop_words = stop_words | punctuation
+    tokens = [word for word in tokens if (word and word not in punc_and_stop_words)]
     # Stems the words
     porter = PorterStemmer()
     tokens = [porter.stem(word) for word in tokens]
-    # Clears empty words
-    tokens = [word for word in tokens if word]
-    # print(f"{[word for word in tokens if not word.isalpha() and not word.isnumeric()]}")
     return tokens
 
 
