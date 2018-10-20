@@ -13,5 +13,4 @@ class EmbeddingsNNHeuristic(Heuristic):
     def calculate(self, curr_state, dest_state):
         curr_embedding = self._embedding_obj.embed(curr_state.title).unsqueeze(0)
         dest_embedding = self._embedding_obj.embed(dest_state.title).unsqueeze(0)
-        input = torch.stack([curr_embedding, dest_embedding], dim=1)
-        return self._model(input).item()
+        return self._model(curr_embedding, dest_embedding).item()
