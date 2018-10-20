@@ -8,3 +8,5 @@ __pycache__/
 node_modules/
 data/
 wikisearch/data_for_visibility
+*.ipynb
+*.vocab
