@@ -7,4 +7,4 @@ requirements.txt
 __pycache__/
 node_modules/
 data/
-wikisearch/data_for_visibility
+wikisearch/data_for_visibility/
