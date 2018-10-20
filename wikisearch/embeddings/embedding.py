@@ -16,16 +16,13 @@ class Embedding(metaclass=ABCMeta):
     def embed(self, title):
         raise NotImplementedError
 
-    def _load_document(self, title):
-        vector = self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
-        if vector:
-            vector = pickle.loads(vector)
-        return vector
+    def _load_page(self, title):
+        return self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
 
     def _store(self, page_id, title, tensor):
-        document = {'_id': page_id, 'title': title, self.__class__.__name__.lower():  self._encode_tensor(tensor),
-                    'last_modified': datetime.datetime.now().__str__()}
-        self._mongo_handler.update_a_document(WIKI_LANG, EMBEDDINGS, document)
+        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower():  self._encode_tensor(tensor),
+                'last_modified': datetime.datetime.now().__str__()}
+        self._mongo_handler.update_page(WIKI_LANG, EMBEDDINGS, page)
 
     @staticmethod
     def _encode_tensor(tensor):

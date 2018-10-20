@@ -26,9 +26,9 @@ class MongoHandler:
         Updates a document in the given database's collection. 
         If the document doesn't exist, insert it (the parameter 'upsert' in charge of that)        
     """
-    def update_a_document(self, database, collection, document):
-        filter_title = {'title': document[ENTRY_TITLE]}
-        updated_value = {"$set": document}
+    def update_page(self, database, collection, page):
+        filter_title = {'title': page[ENTRY_TITLE]}
+        updated_value = {"$set": page}
         self._mongo_client[database][collection].update_one(filter_title, updated_value, upsert=True)
 
     """

@@ -16,8 +16,7 @@ class Word2Vec(Embedding, ABC):
     def __init__(self, database, collection):
         start = time.time()
         super(Word2Vec, self).__init__(database, collection)
-        self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL,
-                                                                      binary=False)
+        self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL, binary=False)
         print(f"Took: {time.time() - start:.1f}s to load the pretrained model")
 
     @staticmethod
@@ -25,7 +24,8 @@ class Word2Vec(Embedding, ABC):
         # Filters out external links
         text = [word for word in text.split() if "https://" not in word and "http://" not in word]
         text = ' '.join(text)
-        with corenlp.CoreNLPClient(timeout=10000, annotators="tokenize ssplit ner lemma pos".split()) as client:
+        # Start the coreNLPServer separately
+        with corenlp.CoreNLPClient(start_server=False, timeout=10000, annotators="tokenize ssplit lemma pos".split()) as client:
             ann = client.annotate(text)
         # Filters out stop words
         stop_words = set(stopwords.words('english'))
