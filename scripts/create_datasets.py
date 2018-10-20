@@ -47,15 +47,15 @@ def find_at_distance(graph, source_node, desired_distance):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--num_records', help="Number of records for training, validation, test sets", nargs=3,
+    parser.add_argument('-n', '--num_records', help='Number of records for training, validation, test sets', nargs=3,
                         type=int, required=True)
-    parser.add_argument('-s', '--seed', help="Random seed", type=int)
-    parser.add_argument('-o', '--out', help="Output dir path", required=True)
+    parser.add_argument('-s', '--seed', help='Random seed', type=int)
+    parser.add_argument('-o', '--out', help='Output dir path', required=True)
     parser.add_argument('-d', '--max_distance', type=int, default=20)
     args = parser.parse_args()
 
     if args.max_distance < 1:
-        raise ValueError("Distance is not a positive integer")
+        raise ValueError('Distance is not a positive integer')
 
     rnd_generator.seed(args.seed)  # If args.seed is None, system's time is used (default behavior)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         dataset = []
         for i in range(num_records):
             dest = None
-            source = ""
+            source = ''
             desired_distance = rnd_generator.randint(1, args.max_distance)
             distance = 0
             while dest is None:  # This is to make sure that the source node actually has neighbors in the first place
@@ -78,9 +78,9 @@ if __name__ == '__main__':
                 dest, distance = find_at_distance(graph, graph.get_node(source), desired_distance)
             distances[dataset_type].append(distance)
             dataset.append((source, dest.title, distance))
-            print_progress_bar(i + 1, num_records, prefix=dataset_type.capitalize() + " Progress",
-                               suffix="Complete. Elapsed time: {:.1f} seconds".format(time.time() - dataset_start), length=50)
-        print(f"{dataset_type.capitalize()}: {num_records} datapoints created.")
+            print_progress_bar(i + 1, num_records, prefix=dataset_type.capitalize() + ' Progress',
+                               suffix='Complete. Elapsed time: {:.1f} seconds'.format(time.time() - dataset_start), length=50)
+        print(f'{dataset_type.capitalize()}: {num_records} datapoints created.')
 
         # Create dataframe from dataset
         df = pd.DataFrame.from_records(dataset, columns=['source', 'destination', 'min_distance'])
@@ -104,5 +104,7 @@ if __name__ == '__main__':
                                              ignore_index=True)
 
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
-    print(tabulate.tabulate(statistics_df, headers="keys", showindex=False, tablefmt="grid"))
-    print("Total elapsed time for all datsets: {:.1f} seconds.".format(time.time() - entire_start))
+    print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'), )
+    with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
+        f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'))
+    print('Total elapsed time for all datsets: {:.1f} seconds.'.format(time.time() - entire_start))
