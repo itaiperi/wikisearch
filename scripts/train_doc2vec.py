@@ -21,8 +21,9 @@ class Doc2VecProgressCallback(CallbackAny2Vec):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--vocab', required=True, help='Path to vocabulary file')
-parser.add_argument('-o', '--out', required=True, help='Path for model output file')
+parser.add_argument('--vocab', '-v', required=True, help='Path to vocabulary file')
+parser.add_argument('--out', '-o', required=True, help='Path for model output file')
+parser.add_argument('--epochs', '-e', default=50, help='Number of training epochs')
 
 args = parser.parse_args()
 
@@ -38,12 +39,10 @@ if not train_pages:
     for i, page in enumerate(pages_cursor, 1):
         train_pages.append(TaggedDocument(Doc2VecEmbeddings.tokenize_text(page[ENTRY_TEXT]), page[ENTRY_TITLE]))
         print_progress_bar(i, pages_cursor.count(), time.time() - start, prefix="Building TaggedDocuments", length=50)
-        if not i % 1000:
-            break
 cache['train_pages'] = train_pages
 
 start = time.time()
-model = Doc2Vec(vector_size=300, min_count=2, epochs=2, callbacks=[Doc2VecProgressCallback()])
+model = Doc2Vec(vector_size=300, min_count=2, epochs=args.epochs, callbacks=[Doc2VecProgressCallback()])
 with open(args.vocab) as f:
     model.build_vocab(train_pages, progress_per=10)
 print(f'Defining model and building vocabulary took {time.time() - start:.1f} seconds')

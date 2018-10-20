@@ -45,7 +45,8 @@ class Cache:
         caller_path = os.path.splitext(os.path.abspath(inspect.stack()[1][1]).replace('/', '_'))[0]
         key_path = os.path.join(self.cache_path, f'{caller_path}-{str(key)}.pkl')
         if os.path.exists(key_path):
-            return pickle.load(open(key_path, 'rb'))
+            with open(key_path, 'rb') as f:
+                return pickle.load(f)
         else:
             return None
 
@@ -54,4 +55,5 @@ class Cache:
             return None
         caller_path = os.path.splitext(os.path.abspath(inspect.stack()[1][1]).replace('/', '_'))[0]
         key_path = os.path.join(self.cache_path, f'{caller_path}-{str(key)}.pkl')
-        pickle.dump(value, open(key_path, 'wb'))
+        with open(key_path, 'wb') as f:
+            pickle.dump(value, f)
