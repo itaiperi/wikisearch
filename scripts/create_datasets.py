@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import tabulate
 
-from scripts.log_progress import print_progress_bar
+from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 

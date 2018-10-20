@@ -7,6 +7,7 @@ requirements.txt
 __pycache__/
 node_modules/
 data/
+cache/
 wikisearch/data_for_visibility
 *.ipynb
 *.vocab

@@ -3,7 +3,7 @@ import os
 import time
 
 from importlib import import_module
-from scripts.log_progress import print_progress_bar
+from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_TEXT
 from wikisearch.utils.mongo_handler import MongoHandler
 
