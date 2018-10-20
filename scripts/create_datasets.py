@@ -78,8 +78,7 @@ if __name__ == '__main__':
                 dest, distance = find_at_distance(graph, graph.get_node(source), desired_distance)
             distances[dataset_type].append(distance)
             dataset.append((source, dest.title, distance))
-            print_progress_bar(i + 1, num_records, prefix=dataset_type.capitalize() + ' Progress',
-                               suffix='Complete. Elapsed time: {:.1f} seconds'.format(time.time() - dataset_start), length=50)
+            print_progress_bar(i + 1, num_records, time.time() - dataset_start, prefix=dataset_type.capitalize(), length=50)
         print(f'{dataset_type.capitalize()}: {num_records} datapoints created.')
 
         # Create dataframe from dataset

@@ -1,5 +1,5 @@
 # Taken from Stack Overflow: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+def print_progress_bar(iteration, total, elapsed_time=None, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -14,7 +14,8 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print('\r%s |%s| %s%% %d/%d %s' % (prefix, bar, percent, iteration, total, suffix), end='\r')
+    print(f'\r{prefix} Progress |{bar}| {percent}% {iteration}/{total} {suffix} Complete.'
+          + f' Elapsed time: {elapsed_time:.1f} seconds' if elapsed_time else '', end='\r')
     # Print New Line on Complete
     if iteration == total:
         print()

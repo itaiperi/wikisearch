@@ -27,16 +27,14 @@ num_of_pages = all_pages_cursor.count()
 for i, page in enumerate(all_pages_cursor):
     page_text = embedding_class.tokenize_text(page[ENTRY_TEXT])
     vocab.update(page_text)
-    print_progress_bar(i + 1, num_of_pages, prefix="Vocabulary Build Progress",
-                       suffix="Complete. Elapsed time: {:.1f} seconds".format(time.time() - entire_start), length=50)
+    print_progress_bar(i + 1, num_of_pages, time.time() - entire_start, prefix="Vocabulary build", length=50)
 
 start = time.time()
 vocab_size = len(vocab)
 with open(os.path.join(args.out, WIKI_LANG + ('_' + args.suffix if args.suffix else '') + '.vocab'), 'w') as f:
     for i, word in enumerate(sorted(vocab)):
         f.write(word + '\n')
-        print_progress_bar(i + 1, vocab_size, prefix="Vocabulary Write Progress",
-                           suffix="Complete. Elapsed time: {:.1f} seconds".format(time.time() - start), length=50)
+        print_progress_bar(i + 1, vocab_size, time.time() - start, prefix="Vocabulary write", length=50)
 
 print(f"Building vocabulary took {time.time() - entire_start:.1f} seconds.")
 print(f"Total vocabulary size is {len(vocab)}")
