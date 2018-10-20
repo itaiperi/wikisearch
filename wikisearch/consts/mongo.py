@@ -1,6 +1,7 @@
 # Consts for mongo
 import os
 
+ENTRY_ID = '_id'
 ENTRY_TITLE = "title"
 ENTRY_CATEGORIZES = "categories"
 ENTRY_PID = "pageID"

@@ -11,7 +11,6 @@ from wikisearch.utils.mongo_handler import MongoHandler
 
 def tokenize_text(text):
     # Splits dashed words
-    text = text.replace('–', ' ')
     text = text.replace('-', ' ')
     # Filters out external links
     text = [word for word in text.split() if "https://" not in word and "http://" not in word]
