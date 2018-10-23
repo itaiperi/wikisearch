@@ -27,7 +27,7 @@ def print_progress_bar(iteration, total, elapsed_time=None, prefix='', suffix=''
 
 
 class Cache:
-    _should_cache = not os.environ.get('WIKISEARCH_CACHE') in [None, False]
+    _should_cache = not os.environ.get('WIKISEARCH_CACHE') in [None, 'False']
     cache_path = os.environ.get('WIKISEARCH_CACHE_PATH')
     if _should_cache and (cache_path is None or not os.path.exists(cache_path)):
         raise ValueError(

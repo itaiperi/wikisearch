@@ -1,44 +1,47 @@
 import argparse
+from importlib import import_module
 
-# import pandas as pd
+import pandas as pd
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
+
+from wikisearch.consts.mongo import CSV_SEPARATOR, WIKI_LANG, PAGES
+from wikisearch.embeddings import AVAILABLE_EMBEDDINGS, EMBEDDINGS_MODULES
 from wikisearch.heuristics.nn_archs import EmbeddingsDistance
-# from wikisearch.utils.consts import CSV_SEPARATOR
 
 
 class DistanceDataset(torch.utils.data.Dataset):
-    def __init__(self, path):
+    def __init__(self, path, embedder):
         super(DistanceDataset, self).__init__()
         self._path = path
-        # self._df = pd.read_csv(self._path, sep=CSV_SEPARATOR)
-
-        self._test_tensor = torch.randn(32, 2, 300)
-        self._test_result = torch.Tensor([[2]] * 32)
+        self._df = pd.read_csv(self._path, sep=CSV_SEPARATOR)
+        self._embedder = embedder
 
     def __len__(self):
-        # return len(self._df)
-        return self._test_tensor.size(0)
+        return len(self._df)
 
     def __getitem__(self, item):
-        # return self._df.iloc[item]
-        return self._test_tensor[item], self._test_result[item]
+        item_row = self._df.iloc[item]
+        if not self._embedder.embed(item_row['source']).size() or not self._embedder.embed(item_row['destination']).size():
+            print(item_row['source'], '->', item_row['destination'])
+        return self._embedder.embed(item_row['source']), self._embedder.embed(item_row['destination']), int(item_row[
+            'min_distance'])
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
-    for batch_idx, (data, target) in enumerate(train_loader, 1):
-        data, target = data.to(device), target.to(device)
+    for batch_idx, (source, destination, min_distance) in enumerate(train_loader, 1):
+        source, destination, min_distance = source.to(device), destination.to(device), min_distance.to(device)
         optimizer.zero_grad()
-        output = model(data)
-        loss = F.mse_loss(output, target)
+        output = model(source, destination)
+        loss = F.mse_loss(output, min_distance)
         loss.backward()
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
+                epoch, batch_idx * len(source), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 
 
@@ -65,14 +68,22 @@ if __name__ == "__main__":
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--log-interval', type=int, default=10)
     parser.add_argument('-o', '--out', required=True)
+    parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
     args = parser.parse_args()
+    # Dynamically load the relevant embedding class. This is used for embedding entries later on!
+    embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[args.embedding]]),
+                                     package='wikisearch')
+    embedding_class = getattr(embedding_module, args.embedding)
+    embedder = embedding_class(WIKI_LANG, PAGES)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(300).to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train), batch_size=args.batch_size)
-    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test), batch_size=args.batch_size)
+    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
+    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
     for epoch in range(args.epochs):
+        print(epoch)
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
 
