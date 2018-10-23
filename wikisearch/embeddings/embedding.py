@@ -23,8 +23,9 @@ class Embedding(metaclass=ABCMeta):
 
     def embed(self, title):
         page = self._load_page(title)
-        if page:
-            return page[self.__class__.__name__.lower()]
+        vector = page.get(self.__class__.__name__.lower())
+        if vector:
+            return vector
 
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
         text = page[ENTRY_TEXT]
