@@ -12,6 +12,7 @@ from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 
+# Options used for printing dataset summaries and statistics
 pd.set_option('display.max_columns', 10)
 pd.set_option('precision', 2)
 
@@ -20,6 +21,13 @@ rnd_generator = random.Random()
 
 
 def find_at_distance(graph, source_node, desired_distance):
+    """
+    Find a node at desired distance from source node
+    :param graph: wikisearch.WikiGraph instance
+    :param source_node: wikisearch.GraphNode instance of source page
+    :param desired_distance: distance (minimal) at which a node should be found
+    :return: node at desired distance / shorter, if there are no nodes at such distance, and the real distance
+    """
     if not list(source_node.get_neighbors()):
         return None, 0
 
@@ -41,17 +49,19 @@ def find_at_distance(graph, source_node, desired_distance):
             break
 
     if not actual_distance:
+        # Edge case, where there are no neighbors
         return None, actual_distance
+    # Return a random neighbor at actual_distance away from source page
     return rnd_generator.choice(list(current_distance_nodes)), actual_distance
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--num_records', help='Number of records for training, validation, test sets', nargs=3,
+    parser.add_argument('--num_records', '-n', help='Number of records for training, validation, test sets', nargs=3,
                         type=int, required=True)
-    parser.add_argument('-s', '--seed', help='Random seed', type=int)
-    parser.add_argument('-o', '--out', help='Output dir path', required=True)
-    parser.add_argument('-d', '--max_distance', type=int, default=20)
+    parser.add_argument('--seed', '-s', type=int, help='Seed used by random generator')
+    parser.add_argument('--out', '-o', required=True, help='Output dir path')
+    parser.add_argument('--max_distance', '-d', type=int, default=20, help='Maximum distance to search for')
     args = parser.parse_args()
 
     if args.max_distance < 1:
@@ -65,12 +75,14 @@ if __name__ == '__main__':
     entire_start = time.time()
     distances = defaultdict(list)
     runtimes = {}
+    # Go over all types of datasets
     for dataset_type, num_records in zip(dataset_types, args.num_records):
         dataset_start = time.time()
         dataset = []
+        # Build current dataset
         for i in range(num_records):
             dest = None
-            source = ''
+            source = None
             desired_distance = rnd_generator.randint(1, args.max_distance)
             distance = 0
             while dest is None:  # This is to make sure that the source node actually has neighbors in the first place
@@ -89,6 +101,7 @@ if __name__ == '__main__':
         df.to_csv(dataset_path, header=True, index=False, sep='\t')
         runtimes[dataset_type] = time.time() - dataset_start
 
+    # Create statistics for dataset
     statistics_df = pd.DataFrame(columns=['Dataset', 'Number of entries', 'Build time', 'Average build time/entry',
                                           'Min distance', 'Max distance', 'Average distance', 'Standard deviation'])
     for dataset_type, num_records in zip(dataset_types, args.num_records):
@@ -102,6 +115,7 @@ if __name__ == '__main__':
                                               'Standard deviation': np.std(distances[dataset_type])},
                                              ignore_index=True)
 
+    # Print out statistics to file
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
     print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'), )
     with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
