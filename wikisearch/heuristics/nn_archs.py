@@ -13,7 +13,10 @@ class EmbeddingsDistance(nn.Module):
         self.conv1 = nn.Conv1d(32, 16, kernel_size=3)
         self.conv2 = nn.Conv1d(16, 1, kernel_size=1)
         # conv5 -> pool2 -> conv3 -> pool2 -> conv3 -> pool
-        self.fc1 = nn.Linear((((((siamese_fc1_size - 4) / 2) - 2) / 2) - 2) / 2, 1)
+        linear_size_float = (((((siamese_fc1_size - 4) / 2) - 2) / 2) - 2) / 2
+        linear_size = int(linear_size_float)
+        assert linear_size == linear_size_float
+        self.fc1 = nn.Linear(linear_size, 1)
 
     def forward(self, x1, x2):
         x1, x2 = self.siamese_fc1(x1), self.siamese_fc1(x2)

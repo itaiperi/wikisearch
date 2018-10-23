@@ -25,7 +25,7 @@ class Embedding(metaclass=ABCMeta):
         page = self._load_page(title)
         vector = page.get(self.__class__.__name__.lower())
         if vector:
-            return vector
+            return Embedding._decode_tensor(vector)
 
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
         text = page[ENTRY_TEXT]
@@ -44,6 +44,10 @@ class Embedding(metaclass=ABCMeta):
     @staticmethod
     def _encode_tensor(tensor):
         return pickle.dumps(tensor)
+
+    @staticmethod
+    def _decode_tensor(tensor):
+        return pickle.loads(tensor)
 
     @abstractmethod
     def _embed(self, tokenized_text):
