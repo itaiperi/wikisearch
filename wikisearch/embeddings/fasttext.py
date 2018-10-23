@@ -6,6 +6,7 @@ import gensim
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 
+from scripts.utils import Cache
 from wikisearch.consts.paths import PATH_TO_PRETRAINED_MODEL
 from wikisearch.embeddings.embedding import Embedding
 
@@ -13,9 +14,13 @@ from wikisearch.embeddings.embedding import Embedding
 class FastText(Embedding, ABC):
     def __init__(self, database, collection):
         super(FastText, self).__init__(database, collection)
+        cache = Cache()
         start = time.time()
-        self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL)
-        print(f"Took: {time.time() - start:.1f}s to load the pretrained model")
+        self._model = cache['fasttext_model']
+        if not self._model:
+            self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL)
+            cache['fasttext_model'] = self._model
+        print(f"Took: {time.time() - start}s to load the pretrained model")
 
     @staticmethod
     def tokenize_text(text):

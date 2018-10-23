@@ -17,7 +17,7 @@ class Embedding(metaclass=ABCMeta):
         return self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
 
     def _store(self, page_id, title, tensor):
-        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower():  self._encode_tensor(tensor),
+        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): Embedding._encode_tensor(tensor),
                 'last_modified': datetime.datetime.now().__str__()}
         self._mongo_handler.update_page(WIKI_LANG, EMBEDDINGS, page)
 
@@ -30,7 +30,7 @@ class Embedding(metaclass=ABCMeta):
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
         text = page[ENTRY_TEXT]
 
-        tokenized_text = self.tokenize_text(text)
+        tokenized_text = Embedding.tokenize_text(text)
         embedded_text_vector = self._embed(tokenized_text)
 
         self._store(page[ENTRY_ID], title, embedded_text_vector)

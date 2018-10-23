@@ -7,6 +7,7 @@ import time
 
 from nltk.corpus import stopwords
 
+from scripts import Cache
 from wikisearch.consts.paths import PATH_TO_PRETRAINED_MODEL
 from wikisearch.consts.pos_conversion import TREEBANK_TO_UNIVERSAL
 from wikisearch.embeddings import Embedding
@@ -14,9 +15,13 @@ from wikisearch.embeddings import Embedding
 
 class Word2Vec(Embedding, ABC):
     def __init__(self, database, collection):
-        start = time.time()
         super(Word2Vec, self).__init__(database, collection)
-        self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL)
+        cache = Cache()
+        start = time.time()
+        self._model = cache['word2vec_model']
+        if not self._model:
+            self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL)
+            cache['word2vec_model'] = self._model
         print(f"Took: {time.time() - start:.1f}s to load the pretrained model")
 
     @staticmethod
