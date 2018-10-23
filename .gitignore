@@ -11,3 +11,4 @@ cache/
 wikisearch/data_for_visibility
 *.ipynb
 *.vocab
+corenlp/

@@ -21,8 +21,8 @@ def tokenize_text(text):
     # Removes punctuation, empty and stop words
     stop_words = set(stopwords.words('english'))
     punctuation = set(string.punctuation)
-    punc_and_stop_words = stop_words | punctuation
-    tokens = [word for word in tokens if (word and word not in punc_and_stop_words)]
+    punctuation_and_stop_words = stop_words | punctuation
+    tokens = [word for word in tokens if (word and word not in punctuation_and_stop_words)]
     # Stems the words
     porter = PorterStemmer()
     tokens = [porter.stem(word) for word in tokens]
