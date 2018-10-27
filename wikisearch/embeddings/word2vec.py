@@ -7,7 +7,7 @@ import time
 
 from nltk.corpus import stopwords
 
-from scripts import Cache
+from scripts.utils import Cache
 from wikisearch.consts.paths import PATH_TO_PRETRAINED_MODEL
 from wikisearch.consts.pos_conversion import TREEBANK_TO_UNIVERSAL
 from wikisearch.embeddings import Embedding
