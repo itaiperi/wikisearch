@@ -29,6 +29,7 @@ class Doc2Vec(Embedding):
         return tokens
 
     def embed(self, title):
+        # TODO need to implement inference of vectors
         pass
 
 

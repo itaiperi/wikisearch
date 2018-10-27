@@ -13,8 +13,11 @@ class Embedding(metaclass=ABCMeta):
         self._collection = collection
         self._mongo_handler = MongoHandler(database, collection)
 
-    def _load_page(self, title):
-        return self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
+    def _load_embedding(self, title):
+        page = self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
+        if page:
+            vector = page.get(self.__class__.__name__.lower())
+            return Embedding._decode_tensor(vector) if vector else None
 
     def _store(self, page_id, title, tensor):
         page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): Embedding._encode_tensor(tensor),
@@ -22,10 +25,9 @@ class Embedding(metaclass=ABCMeta):
         self._mongo_handler.update_page(WIKI_LANG, EMBEDDINGS, page)
 
     def embed(self, title):
-        page = self._load_page(title)
-        vector = page.get(self.__class__.__name__.lower())
-        if vector:
-            return Embedding._decode_tensor(vector)
+        vector = self._load_embedding(title)
+        if vector is not None:
+            return vector
 
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
         text = page[ENTRY_TEXT]

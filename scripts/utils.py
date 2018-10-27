@@ -35,10 +35,6 @@ class Cache:
     print(
         f'Internal caching mechanism {"used." if _should_cache else "not used. To use it, set WIKISEARCH_CACHE (bool) and WIKISEARCH_CACHE_PATH (str) env variables."}')
 
-    def __init__(self):
-        self.cache_path = os.environ.get('WIKISEARCH_CACHE_PATH')
-        # Wether to use cache or not
-
     def __getitem__(self, key):
         if not self._should_cache:
             return None
