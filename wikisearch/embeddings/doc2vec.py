@@ -3,7 +3,6 @@ import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 
-from wikisearch.consts.mongo import WIKI_LANG, PAGES
 from wikisearch.embeddings.embedding import Embedding
 
 
@@ -12,6 +11,7 @@ class Doc2Vec(Embedding):
         super(Doc2Vec, self).__init__(database, collection)
 
     def _embed(self, tokenized_text):
+        # TODO need to implement inference of vectors
         pass
 
     @staticmethod
@@ -31,12 +31,3 @@ class Doc2Vec(Embedding):
         punc_and_stop_words = stop_words | punctuation
         tokens = [word for word in tokens if (word and word not in punc_and_stop_words)]
         return tokens
-
-    def embed(self, title):
-        # TODO need to implement inference of vectors
-        pass
-
-
-if __name__ == "__main__":
-    embedding = Doc2Vec(WIKI_LANG, PAGES)
-    embedding.embed("Apple")

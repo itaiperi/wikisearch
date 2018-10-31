@@ -21,7 +21,7 @@ def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, 
     filled_length = int(length * iteration // total)
     bar = fill * filled_length + '-' * (length - filled_length)
     print(f'\r{prefix} Progress |{bar}| {percent}% {iteration}/{total} {suffix} Complete.'
-          + f' Elapsed time: {elapsed_time:.1f} seconds' if elapsed_time else '', end='\r')
+          + f' Elapsed time: {elapsed_time:.1f}s' if elapsed_time else '', end='\r')
     # Print New Line on Complete
     if iteration == total:
         print()

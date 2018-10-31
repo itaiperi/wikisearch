@@ -35,7 +35,7 @@ with open(args.inp, 'r', encoding='utf8') as in_file:
             source_tensor = embedder.embed(source_title)
             dest_tensor = embedder.embed(dest_title)
 
-            if source_tensor.size() and dest_tensor.size():
+            if source_tensor.nelement() != 0 and dest_tensor.nelement() != 0:
                 out_file.write(f'{source_title}\t{dest_title}\t{min_distance}')
             else:
                 missing_counter += 1
