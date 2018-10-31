@@ -3,12 +3,16 @@ import string
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 
+from wikisearch.consts.mongo import WIKI_LANG, PAGES
 from wikisearch.embeddings.embedding import Embedding
 
 
 class Doc2Vec(Embedding):
-    def __init__(self):
-        super(Doc2Vec, self).__init__()
+    def __init__(self, database, collection):
+        super(Doc2Vec, self).__init__(database, collection)
+
+    def _embed(self, tokenized_text):
+        pass
 
     @staticmethod
     def tokenize_text(text):
@@ -34,5 +38,5 @@ class Doc2Vec(Embedding):
 
 
 if __name__ == "__main__":
-    embedding = Doc2Vec()
+    embedding = Doc2Vec(WIKI_LANG, PAGES)
     embedding.embed("Apple")

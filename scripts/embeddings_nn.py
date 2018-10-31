@@ -84,7 +84,7 @@ def test(args, model, device, test_loader):
             test_loss += F.mse_loss(output, min_distance, reduction='sum').item()  # sum up batch loss
 
     test_loss /= len(test_loader.dataset)
-    print('Test set: Average loss: {:.4f}\n'.format(test_loss))
+    print('-STAT- Test set: Average loss: {:.4f}\n'.format(test_loss))
 
 
 if __name__ == "__main__":

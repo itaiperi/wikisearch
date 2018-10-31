@@ -23,6 +23,6 @@ class Word2VecAverage(Word2Vec):
                 embedded_words.append(self._model[word])
             else:
                 missing_vector_words |= {word}
-        print(f"Found {len(missing_vector_words)} words without vector representation.\n"
+        print(f"-INFO- Found {len(missing_vector_words)} words without vector representation.\n"
               f"The words are: {missing_vector_words}")
         return embedded_words, missing_vector_words

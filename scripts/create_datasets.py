@@ -91,7 +91,7 @@ if __name__ == '__main__':
             distances[dataset_type].append(distance)
             dataset.append((source, dest.title, distance))
             print_progress_bar(i + 1, num_records, time.time() - dataset_start, prefix=dataset_type.capitalize(), length=50)
-        print(f'{dataset_type.capitalize()}: {num_records} datapoints created.')
+        print(f'-INFO- {dataset_type.capitalize()}: {num_records} datapoints created.')
 
         # Create dataframe from dataset
         df = pd.DataFrame.from_records(dataset, columns=['source', 'destination', 'min_distance'])
@@ -120,4 +120,4 @@ if __name__ == '__main__':
     print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'), )
     with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
         f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'))
-    print('Total elapsed time for all datsets: {:.1f} seconds.'.format(time.time() - entire_start))
+    print('-INFO- Total elapsed time for all datsets: {:.1f} seconds.'.format(time.time() - entire_start))

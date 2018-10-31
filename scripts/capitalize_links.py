@@ -26,6 +26,6 @@ batch_size = 2000
 for i, page in enumerate(pages_collection.find(), 1):
     capitalize_english(page)
     if not i % batch_size:
-        print('Processed {} pages...'.find(i))
+        print('-INFO- Processed {} pages...'.find(i))
 
 print("Elapsed time: {:.2f}".format(time.time() - start))

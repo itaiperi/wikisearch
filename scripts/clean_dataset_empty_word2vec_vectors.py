@@ -13,11 +13,11 @@ args = parser.parse_args()
 
 missing_counter = 0
 dataset_size = 0
-with open(args.inp, 'r') as in_file:
+with open(args.inp, 'r', encoding='utf8') as in_file:
     dataset_size = len(list(in_file.readlines())) - 1
 
-with open(args.inp, 'r') as in_file:
-    with open(args.out, 'w') as out_file:
+with open(args.inp, 'r', encoding='utf8') as in_file:
+    with open(args.out, 'w', encoding='utf8') as out_file:
         embedder = Word2VecAverage(WIKI_LANG, PAGES)
         start = time.time()
         for i, line in enumerate(in_file.readlines()):
@@ -34,4 +34,3 @@ with open(args.inp, 'r') as in_file:
                 missing_counter += 1
             print_progress_bar(i, dataset_size, time.time() - start, length=50)
 print(f'Missing counter: {missing_counter}')
-

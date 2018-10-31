@@ -3,22 +3,23 @@ import os
 import pickle
 
 
-def print_progress_bar(iteration, total, elapsed_time=None, prefix='', suffix='', decimals=1, length=100, fill='█'):
+def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, prefix: str = '', suffix: str = '',
+                       decimals: int = 1, length: int = 100, fill: str = '█'):
     # Taken from Stack Overflow: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     """
-        Call in a loop to create terminal progress bar
-        @params:
-            iteration   - Required  : current iteration (Int)
-            total       - Required  : total iterations (Int)
-            prefix      - Optional  : prefix string (Str)
-            suffix      - Optional  : suffix string (Str)
-            decimals    - Optional  : positive number of decimals in percent complete (Int)
-            length      - Optional  : character length of bar (Int)
-            fill        - Optional  : bar fill character (Str)
-        """
+    Call in a loop to create terminal progress bar
+    :param iteration: current iteration - Required
+    :param total: total iterations - Required
+    :param elapsed_time: Not in use
+    :param prefix: prefix string - Optional
+    :param suffix: suffix string - Optional
+    :param decimals: positive number of decimals in percent complete - Optional
+    :param length: character length of bar - Optional
+    :param fill: bar fill character - Optional
+    """
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
+    filled_length = int(length * iteration // total)
+    bar = fill * filled_length + '-' * (length - filled_length)
     print(f'\r{prefix} Progress |{bar}| {percent}% {iteration}/{total} {suffix} Complete.'
           + f' Elapsed time: {elapsed_time:.1f} seconds' if elapsed_time else '', end='\r')
     # Print New Line on Complete
@@ -33,7 +34,8 @@ class Cache:
         raise ValueError(
             'Caching requested, but caching path is incorrect. Please define WIKISEARCH_CACHE env variable.')
     print(
-        f'Internal caching mechanism {"used." if _should_cache else "not used. To use it, set WIKISEARCH_CACHE (bool) and WIKISEARCH_CACHE_PATH (str) env variables."}')
+        f'-INFO- Internal caching mechanism '
+        f'{"used." if _should_cache else "not used. To use it, set WIKISEARCH_CACHE (bool) and WIKISEARCH_CACHE_PATH (str) env variables."}')
 
     def __getitem__(self, key):
         if not self._should_cache:

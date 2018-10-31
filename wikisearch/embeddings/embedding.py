@@ -32,7 +32,7 @@ class Embedding(metaclass=ABCMeta):
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
         text = page[ENTRY_TEXT]
 
-        tokenized_text = Embedding.tokenize_text(text)
+        tokenized_text = self.tokenize_text(text)
         embedded_text_vector = self._embed(tokenized_text)
 
         self._store(page[ENTRY_ID], title, embedded_text_vector)
