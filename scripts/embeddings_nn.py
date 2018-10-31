@@ -99,7 +99,7 @@ if __name__ == "__main__":
     parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
     args = parser.parse_args()
-    # Dynamically load the relevant embedding class. This is used for embedding entries later on!
+    # Loads dynamically the relevant embedding class. This is used for embedding entries later on!
     embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[args.embedding]]),
                                      package='wikisearch')
     embedding_class = getattr(embedding_module, args.embedding)
