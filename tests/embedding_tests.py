@@ -11,13 +11,13 @@ def test_word2vec_average_flow_embedding():
     start = time.time()
     embedding.embed("Lorde")
     end = time.time()
-    print(f"Took to embed 'Lorde' text: {end-start}s.\n"
-          f"Took {(end-start)/663}s per word.")
+    print(f"-INFO- Took to embed 'Lorde' text: {end-start}s.\n"
+          f"-INFO- Took {(end-start)/663}s per word.")
     start = time.time()
     embedding.embed("People's Republic of China")
     end = time.time()
-    print(f"Took to embed 'People's Republic of China' text: {end-start}s.\n"
-          f"Took {(end-start)/2570}s per word")
+    print(f"-INFO- Took to embed 'People's Republic of China' text: {end-start}s.\n"
+          f"-INFO- Took {(end-start)/2570}s per word")
 
 
 def test_fasttext_average_flow_embedding():
@@ -26,18 +26,15 @@ def test_fasttext_average_flow_embedding():
     start = time.time()
     embedding.embed("Lorde")
     end = time.time()
-    print(f"Took to embed 'Lorde' text: {end-start}s.\n"
-          f"Took {(end-start)/663}s per word.")
+    print(f"-INFO- Took to embed 'Lorde' text: {end-start}s.\n"
+          f"-INFO- Took {(end-start)/663}s per word.")
     start = time.time()
     embedding.embed("People's Republic of China")
     end = time.time()
-    print(f"Took to embed 'People's Republic of China' text: {end-start}s.\n"
-          f"Took {(end-start)/2570}s per word")
+    print(f"-INFO- Took to embed 'People's Republic of China' text: {end-start}s.\n"
+          f"-INFO- Took {(end-start)/2570}s per word")
 
 
 if __name__ == "__main__":
-    # Before running one of the tests change the path of 'PATH_TO_PRETRAINED_MODEL'
-    # to the location of the wanted pretrained model
-
     test_word2vec_average_flow_embedding()
     # test_fasttext_average_flow_embedding()

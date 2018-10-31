@@ -8,7 +8,7 @@ import time
 from nltk.corpus import stopwords
 
 from scripts.utils import Cache
-from wikisearch.consts.paths import PATH_TO_PRETRAINED_MODEL
+from wikisearch.consts.paths import PATH_TO_PRETRAINED_WORD2VEC_MODEL
 from wikisearch.consts.pos_conversion import TREEBANK_TO_UNIVERSAL
 from wikisearch.embeddings import Embedding
 
@@ -20,9 +20,9 @@ class Word2Vec(Embedding, ABC):
         start = time.time()
         self._model = cache['word2vec_model']
         if not self._model:
-            self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_MODEL)
+            self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_WORD2VEC_MODEL)
             cache['word2vec_model'] = self._model
-        print(f"Took: {time.time() - start:.1f}s to load the pretrained model")
+        print(f"-INFO- Took {time.time() - start:.1f}s to load the pretrained model")
 
     @staticmethod
     def tokenize_text(text):
