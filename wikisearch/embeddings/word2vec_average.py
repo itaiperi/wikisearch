@@ -4,6 +4,11 @@ from wikisearch.embeddings import Word2Vec
 
 
 class Word2VecAverage(Word2Vec):
+    """
+    The class represents the word2vec embedding when a page's vector is calculated by taking an average
+    of all the words in the page's text
+    """
+
     def _embed(self, tokenized_text):
         embedded_words = [self._model[tagged_word] for tagged_word in tokenized_text
                           if tagged_word in self._model.__dict__['vocab']]
@@ -15,10 +20,15 @@ class Word2VecAverage(Word2Vec):
 
         return torch.mean(torched_words_vectors, 0)
 
-    def _get_embedded_words_and_missing_vectors(self, tokenized_text):
+    def _get_embedded_words_and_missing_vectors(self, text):
+        """
+        Embeds the words and indicates which words can't be embedded
+        :param text: The words to examine if they can be embedded
+        :return: The embedded words and the words which cannot be embedded
+        """
         embedded_words = []
         missing_vector_words = set()
-        for word in tokenized_text:
+        for word in text:
             if word in self._model.__dict__['vocab']:
                 embedded_words.append(self._model[word])
             else:

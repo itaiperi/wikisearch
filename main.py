@@ -10,6 +10,10 @@ from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
 
 if __name__ == '__main__':
+    """
+    Finding a path between two wikipedia pages    
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--source', required=True, help="Source title")
     parser.add_argument('-d', '--dest', required=True, help="Destination title")
@@ -24,11 +28,12 @@ if __name__ == '__main__':
     astar = Astar(cost, heuristic, strategy, graph)
 
     start = time.time()
-    path, distance, developed = astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
+    path, distance, developed = \
+        astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
     if path:
         print("Path: ", end="")
         print(*[node.title for node in path], sep=" -> ")
-        print("Distance:", distance)
-        print("Number of nodes developed: {}, Time taken: {:.1f}".format(developed, time.time() - start))
+        print("Distance: ", distance)
     else:
-        print("Path not found. Number of nodes developed: {}, Time taken: {:.1f}".format(developed, time.time() - start))
+        print(f"Path not found.")
+    print(f"Number of nodes developed: {developed}\nTime taken: {time.time() - start:.1f}")

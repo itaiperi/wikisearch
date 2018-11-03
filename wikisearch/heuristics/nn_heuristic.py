@@ -4,7 +4,11 @@ from .heuristic import Heuristic
 from .nn_archs import EmbeddingsDistance
 
 
-class EmbeddingsNNHeuristic(Heuristic):
+class NNHeuristic(Heuristic):
+    """
+    The NN Heuristic class
+    """
+
     def __init__(self, model_state_path, embed_dim, embedder):
         self._model = EmbeddingsDistance(embed_dim)
         self._model.load_state_dict(torch.load(model_state_path))

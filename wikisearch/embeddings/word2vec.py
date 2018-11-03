@@ -14,7 +14,16 @@ from wikisearch.embeddings import Embedding
 
 
 class Word2Vec(Embedding, ABC):
+    """
+    The class representing the word2vec embedding and its derivatives
+    """
+
     def __init__(self, database, collection):
+        """
+        Load the embedding pre-trained model
+        :param database: The database to connect to this instance
+        :param collection: The collection to connect to this instance
+        """
         super(Word2Vec, self).__init__(database, collection)
         cache = Cache()
         start = time.time()

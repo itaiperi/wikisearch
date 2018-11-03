@@ -13,7 +13,16 @@ from wikisearch.embeddings.embedding import Embedding
 
 
 class FastText(Embedding, ABC):
+    """
+    The class representing the fasttext embedding and its derivatives
+    """
+
     def __init__(self, database, collection):
+        """
+        Load the embedding pre-trained model
+        :param database: The database to connect to this instance
+        :param collection: The collection to connect to this instance
+        """
         super(FastText, self).__init__(database, collection)
         cache = Cache()
         start = time.time()

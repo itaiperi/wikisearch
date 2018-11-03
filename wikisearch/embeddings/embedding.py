@@ -8,23 +8,43 @@ from wikisearch.utils.mongo_handler import MongoHandler
 
 
 class Embedding(metaclass=ABCMeta):
+    """
+    Base class for representing an embedding type
+    """
+
     def __init__(self, database, collection):
         self._database = database
         self._collection = collection
         self._mongo_handler = MongoHandler(database, collection)
 
     def _load_embedding(self, title):
+        """
+        Loads the title's embedding from the database. If doesn't exist returns None
+        :param title: the title to search its embedding in the database
+        :return: the title's embedding, or None if doesn't exist
+        """
         page = self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
         if page:
             vector = page.get(self.__class__.__name__.lower())
-            return Embedding._decode_tensor(vector) if vector else None
+            return Embedding._decode_vector(vector) if vector else None
 
-    def _store(self, page_id, title, tensor):
-        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): Embedding._encode_tensor(tensor),
+    def _store(self, page_id, title, vector):
+        """
+        Stores the title embedding in the database.
+        :param page_id: The title's id in the original database
+        :param title: The titles to keep its embedding
+        :param vector: The title's embedding
+        """
+        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): Embedding._encode_vector(vector),
                 'last_modified': datetime.datetime.now().__str__()}
         self._mongo_handler.update_page(WIKI_LANG, EMBEDDINGS, page)
 
     def embed(self, title):
+        """
+        Embeds the title's text
+        :param title: The title to embed its text
+        :return: The embedded title's text
+        """
         vector = self._load_embedding(title)
         if vector is not None:
             return vector
@@ -41,16 +61,34 @@ class Embedding(metaclass=ABCMeta):
     @staticmethod
     @abstractmethod
     def tokenize_text(title):
+        """
+        Tokenizes the title's text by the embedding class
+        :param title: The title to tokenize its text
+        """
         raise NotImplementedError
 
     @staticmethod
-    def _encode_tensor(tensor):
-        return pickle.dumps(tensor)
+    def _encode_vector(vector):
+        """
+        Encodes the vector to a saveable value in the database
+        :param vector: The vector to encode
+        :return: The encoded vector
+        """
+        return pickle.dumps(vector)
 
     @staticmethod
-    def _decode_tensor(tensor):
-        return pickle.loads(tensor)
+    def _decode_vector(vector):
+        """
+        Decodes the vector's value in the database to its original representation
+        :param vector: The vector to decode
+        :return: The decoded vector
+        """
+        return pickle.loads(vector)
 
     @abstractmethod
     def _embed(self, tokenized_text):
+        """
+        The embedding method uniquely per embedding type
+        :param tokenized_text: The text after it was tokenized
+        """
         raise NotImplementedError

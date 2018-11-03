@@ -1,3 +1,4 @@
+# Dictionary to convert from Penn Treebank POS to Universal POS
 TREEBANK_TO_UNIVERSAL = \
     {
         '#': 'SYM', '$': 'SYM', 'SYM': 'SYM',

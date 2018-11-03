@@ -28,7 +28,7 @@ def find_at_distance(graph, source_node, desired_distance):
     :param desired_distance: distance (minimal) at which a node should be found
     :return: node at desired distance / shorter, if there are no nodes at such distance, and the real distance
     """
-    if not list(source_node.get_neighbors()):
+    if not list(source_node.neighbors):
         return None, 0
 
     actual_distance = 0
@@ -36,7 +36,8 @@ def find_at_distance(graph, source_node, desired_distance):
     all_nodes = set(current_distance_nodes)
 
     while actual_distance < desired_distance:
-        # If neighbor has been found before, then there's a shorter path, and we don't add it to current distance
+        # If neighbor has been found before, then there's a shorter path, and we don't add it to current
+        # distance
         next_distance_nodes = {neighbor for node in current_distance_nodes
                                for neighbor in graph.get_node_neighbors(node)}
         next_distance_nodes = next_distance_nodes - all_nodes

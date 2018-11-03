@@ -1,9 +1,11 @@
-from functools import reduce
-
 from .strategy import Strategy
 
 
 class DefaultAstarStrategy(Strategy):
+    """
+    The A* classic strategy
+    """
+
     def get_next_state(self, open_set):
         min_f = float("inf")
         min_g = 0

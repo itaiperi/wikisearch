@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+# TODO: Add documentation
 class EmbeddingsDistance(nn.Module):
     def __init__(self, embed_dim):
         super(EmbeddingsDistance, self).__init__()

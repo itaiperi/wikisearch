@@ -2,16 +2,27 @@ import time
 from collections import OrderedDict
 
 
-class Astar():
+class Astar:
+    """
+    Implements the A* algorithm
+    """
+
     def __init__(self, cost, heuristic, strategy, graph):
         self._cost = cost
         self._heuristic = heuristic
         self._strategy = strategy
         self._graph = graph
 
-    def run(self, source_title: str, dest_title: str, time_limit: float=None) -> (list, int, int):
+    def run(self, source_title: str, destination_title: str, time_limit: float=None) -> (list, int, int):
+        """
+        Runs A* from the source title to the destination title till gets the time limit
+        :param source_title: The opening state of the path
+        :param destination_title: The goal state of the path
+        :param time_limit: The time assigned to the algorithm to run
+        :return: The most successful path between the given titles and its length
+        """
         source_state = self._graph.get_node(source_title)
-        dest_state = self._graph.get_node(dest_title)
+        dest_state = self._graph.get_node(destination_title)
 
         closed_set = OrderedDict()
         parents = OrderedDict()
@@ -49,9 +60,16 @@ class Astar():
         return None, -1, developed
 
     @staticmethod
-    def _reconstruct_path(parents, dest_state):
+    def _reconstruct_path(parents, destination_state):
+        """
+        Reconstruct the path from the opening state till the destination state. The path is given backwards
+        from the destination state through its parents till the opening state
+        :param parents: the parents of each state from the destination state till the opening state
+        :param destination_state: the destination state.
+        :return: The reconstructed path from the opening state till the destination state
+        """
         parents_list = []
-        parent = dest_state
+        parent = destination_state
 
         while parent:
             parents_list = [parent] + parents_list
