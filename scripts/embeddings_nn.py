@@ -115,6 +115,6 @@ if __name__ == "__main__":
     for epoch in range(args.epochs):
         train(args, model, device, train_loader, optimizer, epoch)
         test(args, model, device, test_loader)
-        # TODO save the best model here! should use return value from test function to see which model is best.
+        # TODO save the best model here! should use return value from test function to see which model is best
 
     torch.save(model.state_dict(), args.out)

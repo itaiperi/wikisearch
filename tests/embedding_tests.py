@@ -6,19 +6,16 @@ from wikisearch.embeddings import FastTextAverage, Word2VecAverage
 
 # Before running this test upload a coreNLPServer (from cmd and not from power shell!)
 def test_word2vec_average_flow_embedding():
-    print("----------------Testing Word2VecAverage--------------")
     embedding = Word2VecAverage(WIKI_LANG, PAGES)
     _test_embedding_timing(embedding)
 
 
 def test_fasttext_average_flow_embedding():
-    print("----------------Testing FastTextAverage--------------")
     embedding = FastTextAverage(WIKI_LANG, PAGES)
     _test_embedding_timing(embedding)
 
 
 def test_empty_vectors_recognition():
-    print("--------------------Testing empty vectors recognition----------------")
     embedding_fasttext = FastTextAverage(WIKI_LANG, PAGES)
     embedding_word2vec = Word2VecAverage(WIKI_LANG, PAGES)
     title = "July 12"
