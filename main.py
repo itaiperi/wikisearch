@@ -36,4 +36,4 @@ if __name__ == '__main__':
         print("Distance: ", distance)
     else:
         print(f"Path not found.")
-    print(f"Number of nodes developed: {developed}\nTime taken: {time.time() - start:.1f}")
+    print(f"-TIME- Number of nodes developed: {developed}\nTime taken: {time.time() - start:.1f}s")

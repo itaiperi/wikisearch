@@ -37,5 +37,5 @@ with open(os.path.join(args.out, WIKI_LANG + ('_' + args.suffix if args.suffix e
         f.write(word + '\n')
         print_progress_bar(i + 1, vocab_size, time.time() - start, prefix="Vocabulary write", length=50)
 
-print(f"Building vocabulary took {time.time() - entire_start:.1f} seconds.")
-print(f"Total vocabulary size is {len(vocab)}")
+print(f"-TIME- Building vocabulary took {time.time() - entire_start:.1f}s")
+print(f"-INFO- Total vocabulary size is {len(vocab)}")

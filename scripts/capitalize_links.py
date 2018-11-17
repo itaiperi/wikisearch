@@ -28,4 +28,4 @@ for i, page in enumerate(pages_collection.find(), 1):
     if not i % batch_size:
         print('-INFO- Processed {} pages...'.find(i))
 
-print("Elapsed time: {:.2f}".format(time.time() - start))
+print(f"-TIME- Elapsed time: {time.time() - start:.2f}s")

@@ -56,7 +56,7 @@ model = Doc2Vec(vector_size=300, min_count=2, epochs=args.epochs, callbacks=[Doc
 with open(args.vocab) as f:
     # Build vocabulary for model
     model.build_vocab(train_pages, progress_per=10)
-print(f'Defining model and building vocabulary took {time.time() - start:.1f} seconds')
+print(f'-TIME- Defining model and building vocabulary took {time.time() - start:.1f}s')
 
 model.train(train_pages, total_examples=len(train_pages), epochs=model.epochs)
 model.save(args.out)

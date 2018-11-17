@@ -30,7 +30,7 @@ class FastText(Embedding, ABC):
         if not self._model:
             self._model = gensim.models.KeyedVectors.load_word2vec_format(PATH_TO_PRETRAINED_FASTTEXT_MODEL)
             cache['fasttext_model'] = self._model
-        print(f"-INFO- Took {time.time() - start}s to load the pretrained model")
+        print(f"-TIME- Took {time.time() - start}s to load the pretrained model")
 
     @staticmethod
     def tokenize_text(text):

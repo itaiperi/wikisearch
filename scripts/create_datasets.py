@@ -121,4 +121,4 @@ if __name__ == '__main__':
     print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'), )
     with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
         f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'))
-    print('-INFO- Total elapsed time for all datsets: {:.1f} seconds.'.format(time.time() - entire_start))
+    print(f"-TIME- Total elapsed time for all datasets: {time.time() - entire_start:.1f}s")

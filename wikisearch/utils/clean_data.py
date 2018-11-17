@@ -63,7 +63,7 @@ class CleanData:
             clean_pages = list(pool.map(clean_page, self._mongo_handler.get_all_pages()))
 
         self._mongo_handler.create_database_collection_with_data(CLEAN_WIKI, PAGES, clean_pages)
-        print(f"-INFO- Cleaning took {int(time.time() - start)} seconds")
+        print(f"-TIME- Cleaning took {int(time.time() - start)}s")
 
 
 if __name__ == "__main__":

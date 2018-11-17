@@ -20,7 +20,7 @@ def get_nonexistent_wikipedia_pages(wiki_language):
         for page in nonexistent_pages:
             nonexistent_pages_file.write(f"{page}\n")
 
-        print(f"-INFO- Getting the nonexistent pages took: {int(time.time() - start)} seconds")
+        print(f"-TIME- Getting the nonexistent pages took: {int(time.time() - start)}s")
         return nonexistent_pages
 
 
@@ -53,7 +53,7 @@ def get_redirect_pages():
         for page, redirect_page in redirect_pages.items():
             redirect_pages_file.write(f"{page} -> {redirect_page}\n")
 
-    print(f"-INFO- Getting the redirect pages took: {int(time.time() - start)} seconds")
+    print(f"-TIME- Getting the redirect pages took: {int(time.time() - start)}s")
     return redirect_pages
 
 
@@ -75,7 +75,7 @@ def build_redirect_pages_lookup_table():
     with open(PATH_TO_REDIRECT_LOOKUP_TABLE, 'wb') as file:
         pickle.dump(lookup_table_for_redirect_pages, file, protocol=-1)
 
-    print(f"-INFO- Building the redirect lookup table took: {int(time.time() - start)} seconds")
+    print(f"-TIME- Building the redirect lookup table took: {int(time.time() - start)}s")
 
 
 if __name__ == "__main__":
