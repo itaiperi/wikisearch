@@ -21,17 +21,15 @@ def test_empty_vectors_recognition():
     print("--------------------Testing empty vectors recognition----------------")
     embedding_fasttext = FastTextAverage(WIKI_LANG, PAGES)
     embedding_word2vec = Word2VecAverage(WIKI_LANG, PAGES)
-    title = "Long-term memory"
+    title = "July 12"
     embedding_vector_fasttext = embedding_fasttext.embed(title)
     embedding_vector_word2vec = embedding_word2vec.embed(title)
     print(f"FastText"
-          f"Is the vector empty?: {'Yes' if embedding_vector_fasttext.size() else 'No'}\n"
-          f"And by the other method: {'Yes' if embedding_vector_fasttext.nelement() == 0 else 'No'}\n"
-          f"By the third: {'Yes' if len(embedding_vector_fasttext)==0 else 'No'}")
+          f"Is the vector empty?: {'Yes' if not embedding_vector_fasttext.size() else 'No'}\n"
+          f"And by the other method: {'Yes' if embedding_vector_fasttext.nelement() == 0 else 'No'}\n")
     print(f"Word2Vec"
-          f"Is the vector empty?: {'Yes' if embedding_vector_word2vec.size() else 'No'}\n"
-          f"And by the other method: {'Yes' if embedding_vector_word2vec.nelement() == 0 else 'No'}\n"
-          f"By the third: {'Yes' if len(embedding_vector_word2vec)==0 else 'No'}")
+          f"Is the vector empty?: {'Yes' if not embedding_vector_word2vec.size() else 'No'}\n"
+          f"And by the other method: {'Yes' if embedding_vector_word2vec.nelement() == 0 else 'No'}\n")
 
 
 def _test_embedding_timing(embedding):
