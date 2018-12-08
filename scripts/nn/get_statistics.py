@@ -1,4 +1,5 @@
 import argparse
+import random
 from enum import Enum
 from importlib import import_module
 
@@ -18,49 +19,85 @@ from wikisearch.heuristics.nn_archs import EmbeddingsDistance
 class LossFunction(Enum):
     VALUE = 1
     METHOD = 2
+    BATCHES_IDXS = 3
+    PERCENTAGE = 4
 
 
-def get_model_accuracy_statistics(model_pr, test_loader_pr, statistics_path_pr):
+def get_model_accuracy_statistics(model_pr, test_loader_pr, statistics_path_pr, batch_size_pr):
     """
     Calculates the accuracy statistics of the model
     :param model_pr: the model which will crate the statistics file for
     :param test_loader_pr: the expected results to compare to
     :param statistics_path_pr: the path where the statistics file will be saved to
+    :param batch_size_pr: the batch size
     """
 
+    dataset_size = len(test_loader_pr.dataset)
+    batches_idxs = range(1, round(len(range(dataset_size)) / batch_size_pr) + 1)
     losses = {'L1_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.l1_loss},
               'L2_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.mse_loss}}
+    losses_per_percentage = {
+        'L1_90%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.l1_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(90 / 5)),
+                       LossFunction.PERCENTAGE: 0.9},
+        'L1_75%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.l1_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(75 / 5)),
+                       LossFunction.PERCENTAGE: 0.75},
+        'L1_50%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.l1_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(50 / 5)),
+                       LossFunction.PERCENTAGE: 0.5},
+        'L2_90%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.mse_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(90 / 5)),
+                       LossFunction.PERCENTAGE: 0.9},
+        'L2_75%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.mse_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(75 / 5)),
+                       LossFunction.PERCENTAGE: 0.75},
+        'L2_50%_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: F.mse_loss,
+                       LossFunction.BATCHES_IDXS: random.choices(batches_idxs, k=round(50 / 5)),
+                       LossFunction.PERCENTAGE: 0.5}
+    }
     vector_operations = {'STANDARD_DEVIATION_AVG': {LossFunction.VALUE: 0, LossFunction.METHOD: Tensor.std}}
-    # 'L1_90%': 0, 'L1_75%': 0, 'L1_50%': 0,
-    # 'L2_90%': 0, 'L2_75%': 0, 'L2_50%': 0,
 
     with torch.no_grad():
-        for source, destination, actual_distance in test_loader_pr:
+        for batch_idx, (source, destination, actual_distance) in enumerate(test_loader_pr, 1):
             # Move tensors to relevant devices, and handle distances tensor.
             source, destination, actual_distance = \
                 source.to(device), destination.to(device), actual_distance.float().to(device).unsqueeze(1)
             model_distance = model_pr(source, destination)
-            for loss_type in losses:
-                losses[loss_type][LossFunction.VALUE] += \
-                    losses[loss_type][LossFunction.METHOD](actual_distance, model_distance,
-                                                           reduction='sum').item()
-            for vector_operation in vector_operations:
-                vector_operations[vector_operation][LossFunction.VALUE] += \
-                    vector_operations[vector_operation][LossFunction.METHOD](actual_distance, 0)
+            for loss_type in losses.values():
+                loss_type[LossFunction.VALUE] += \
+                    loss_type[LossFunction.METHOD](actual_distance, model_distance,
+                                                   reduction='sum').item()
+
+            for loss_per_percentage in losses_per_percentage.values():
+                if batch_idx in loss_per_percentage[LossFunction.BATCHES_IDXS]:
+                    loss_per_percentage[LossFunction.VALUE] += \
+                        loss_per_percentage[LossFunction.METHOD](actual_distance, model_distance,
+                                                                 reduction='sum').item()
+
+            for vector_operation in vector_operations.values():
+                vector_operation[LossFunction.VALUE] += \
+                    vector_operation[LossFunction.METHOD](model_distance, 0)
 
     # Options used for printing dataset summaries and statistics
     pd.set_option('display.max_columns', 10)
     pd.set_option('precision', 2)
     statistics_df = pd.DataFrame(columns=['Method', 'Result'])
-    size_of_dataset = len(test_loader_pr.dataset)
     for loss_type in losses:
         statistics_df = statistics_df.append({
-            'Method': loss_type, 'Result': losses[loss_type][LossFunction.VALUE] / size_of_dataset},
+            'Method': loss_type,
+            'Result': losses[loss_type][LossFunction.VALUE] / dataset_size},
+            ignore_index=True)
+    for loss_per_percentage in losses_per_percentage:
+        statistics_df = statistics_df.append({
+            'Method': loss_per_percentage,
+            'Result': losses_per_percentage[loss_per_percentage][LossFunction.VALUE] / (
+                    dataset_size * losses_per_percentage[loss_per_percentage][LossFunction.PERCENTAGE])},
             ignore_index=True)
     for vector_operation in vector_operations:
         statistics_df = statistics_df.append({
             'Method': vector_operation,
-            'Result': vector_operations[vector_operation][LossFunction.VALUE] / size_of_dataset},
+            'Result': vector_operations[vector_operation][LossFunction.VALUE] / dataset_size},
             ignore_index=True)
 
     # Print out statistics to file
@@ -94,6 +131,7 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(args.model, map_location=None if torch.cuda.is_available() else 'cpu'))
     model.eval()
 
-    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder),
-                                              batch_size=args.batch_size)
-    get_model_accuracy_statistics(model, test_loader, args.statistics)
+    test_dd = DistanceDataset(args.test, embedder)
+    batch_size = round(len(test_dd) * 0.05)
+    test_loader = torch.utils.data.DataLoader(test_dd, batch_size=batch_size)
+    get_model_accuracy_statistics(model, test_loader, args.statistics, batch_size)
