@@ -123,5 +123,7 @@ if __name__ == "__main__":
         test(args, model, device, test_loader)
         # TODO save the best model here! should use return value from test function to see which model is best
 
-    print(f"-TIME- Total time took to train the model: {time.time() - start_of_all:.1f}s")
+    total_time = time.time() - start_of_all
+    print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
+          f"{total_time / 60}m -> {total_time / 3600}h")
     torch.save(model.state_dict(), args.out)
