@@ -49,3 +49,16 @@ class Word2Vec(Embedding, ABC):
         text = [f"{token.lemma}_{TREEBANK_TO_UNIVERSAL[token.pos]}" for sentence in ann.sentence
                 for token in sentence.token if token.lemma not in punctuation_and_stop_words]
         return text
+
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the embedding
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * type - name of embedding (fasttext, word2vec, etc.)
+                * vectors_filepath - path to weights vectors file that is used
+        """
+        return {
+            'type': 'word2vec',
+            'vectors_filepath': PATH_TO_PRETRAINED_WORD2VEC_MODEL,
+        }

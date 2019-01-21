@@ -45,3 +45,16 @@ class FastText(Embedding, ABC):
         punctuation_and_stop_words = stop_words | punctuation
         text = [word for word in text if word not in punctuation_and_stop_words]
         return text
+
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the embedding
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * type - name of embedding (fasttext, word2vec, etc.)
+                * vectors_filepath - path to weights vectors file that is used
+        """
+        return {
+            'type': 'word2vec',
+            'vectors_filepath': PATH_TO_PRETRAINED_FASTTEXT_MODEL,
+        }

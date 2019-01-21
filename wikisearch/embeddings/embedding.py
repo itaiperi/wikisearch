@@ -67,6 +67,17 @@ class Embedding(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the embedding
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * type - name of embedding (fasttext, word2vec, etc.)
+                * vectors_filepath - path to weights vectors file that is used
+        """
+        raise NotImplementedError
+
     @staticmethod
     def _encode_vector(vector):
         """

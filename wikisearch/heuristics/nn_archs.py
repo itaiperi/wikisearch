@@ -32,3 +32,14 @@ class EmbeddingsDistance(nn.Module):
         x = self.fc1(x).squeeze(2)
 
         return x
+
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the model
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * architecture - description of architecture of the model's network
+        """
+        return {
+            'architecture': [k + ": " + repr(v) for k, v in self._modules.items()],
+        }

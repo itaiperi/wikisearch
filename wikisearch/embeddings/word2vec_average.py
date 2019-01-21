@@ -1,5 +1,6 @@
 import torch
 
+from wikisearch.consts.paths import PATH_TO_PRETRAINED_WORD2VEC_MODEL
 from wikisearch.embeddings import Word2Vec
 
 
@@ -36,3 +37,16 @@ class Word2VecAverage(Word2Vec):
         print(f"-INFO- Found {len(missing_vector_words)} words without vector representation.\n"
               f"The words are: {missing_vector_words}")
         return embedded_words, missing_vector_words
+
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the embedding
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * type - name of embedding (fasttext, word2vec, etc.)
+                * vectors_filepath - path to weights vectors file that is used
+        """
+        return {
+            'type': 'word2vec_average',
+            'vectors_filepath': PATH_TO_PRETRAINED_WORD2VEC_MODEL,
+        }

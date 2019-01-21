@@ -112,27 +112,27 @@ if __name__ == "__main__":
                                      package='wikisearch')
     embedding_class = getattr(embedding_module, args.embedding)
 
-    # embedder = embedding_class(WIKI_LANG, PAGES)
+    embedder = embedding_class(WIKI_LANG, PAGES)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(300).to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    # train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
-    # test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
+    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
     metadata = {
         "training_set": args.train,
         "validation_set": args.test,
         "batch_size": args.batch_size,
         "epochs": args.epochs,
-        "embedding": args.embedding,
         "optimizer": args.opt,
         "optimizer_params": {
             # TODO These are relevant in case of SGD. In case of other optimizer, might need to change
             "learning_rate": args.lr,
             "momentum": args.momentum,
         },
-        "model_architecture": [k + ": " + repr(v) for k, v in model._modules.items()],
     }
+    metadata['model'] = model.get_metadata()
+    metadata['embedder'] = embedder.get_metadata()
     model_name = os.path.splitext(args.out)[0]
     with open(model_name + ".meta", 'w') as meta_file:
         json.dump(metadata, meta_file, indent=2)

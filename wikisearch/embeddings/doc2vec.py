@@ -31,3 +31,17 @@ class Doc2Vec(Embedding):
         punc_and_stop_words = stop_words | punctuation
         tokens = [word for word in tokens if (word and word not in punc_and_stop_words)]
         return tokens
+
+    def get_metadata(self):
+        """
+        Returns metadata relevant to the embedding
+        :return: dictionary with key-metadata pairs.
+            Compulsory keys:
+                * type - name of embedding (fasttext, word2vec, etc.)
+                * vectors_filepath - path to weights vectors file that is used
+        """
+        return {
+            'type': 'doc2vec',
+            # TODO fill out
+            'vectors_filepath': '',
+        }
