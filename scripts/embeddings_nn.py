@@ -1,4 +1,6 @@
 import argparse
+import json
+import os
 import time
 from importlib import import_module
 
@@ -98,6 +100,7 @@ if __name__ == "__main__":
     parser.add_argument('-te', '--test', help='Path to testing file')
     parser.add_argument('-b', '--batch-size', type=int, default=16)
     parser.add_argument('-e', '--epochs', type=int, default=50)
+    parser.add_argument('--opt', choices=['SGD'], default='SGD')
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('-o', '--out', required=True)
@@ -109,13 +112,31 @@ if __name__ == "__main__":
                                      package='wikisearch')
     embedding_class = getattr(embedding_module, args.embedding)
 
-    embedder = embedding_class(WIKI_LANG, PAGES)
+    # embedder = embedding_class(WIKI_LANG, PAGES)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(300).to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
-    test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+    # train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
+    # test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+    metadata = {
+        "training_set": args.train,
+        "validation_set": args.test,
+        "batch_size": args.batch_size,
+        "epochs": args.epochs,
+        "embedding": args.embedding,
+        "optimizer": args.opt,
+        "optimizer_params": {
+            # TODO These are relevant in case of SGD. In case of other optimizer, might need to change
+            "learning_rate": args.lr,
+            "momentum": args.momentum,
+        },
+        "model_architecture": [k + ": " + repr(v) for k, v in model._modules.items()],
+    }
+    model_name = os.path.splitext(args.out)[0]
+    with open(model_name + ".meta", 'w') as meta_file:
+        json.dump(metadata, meta_file, indent=2)
+    exit(1)
     # Do train-test iterations, to train and check efficiency of model
     start_of_all = time.time()
     for epoch in range(args.epochs):
