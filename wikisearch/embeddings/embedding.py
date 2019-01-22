@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 
 from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, PAGES, ENTRY_TEXT, ENTRY_ID
+from wikisearch.embeddings import EMBEDDINGS_MODULES
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -16,6 +17,7 @@ class Embedding(metaclass=ABCMeta):
         self._database = database
         self._collection = collection
         self._mongo_handler = MongoHandler(database, collection)
+        self._type = EMBEDDINGS_MODULES[self.__class__.__name__]
 
     def _load_embedding(self, title):
         """

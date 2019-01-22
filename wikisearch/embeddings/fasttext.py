@@ -55,6 +55,6 @@ class FastText(Embedding, ABC):
                 * vectors_filepath - path to weights vectors file that is used
         """
         return {
-            'type': 'word2vec',
+            'type': self._type,
             'vectors_filepath': PATH_TO_PRETRAINED_FASTTEXT_MODEL,
         }

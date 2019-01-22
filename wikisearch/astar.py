@@ -13,7 +13,7 @@ class Astar:
         self._strategy = strategy
         self._graph = graph
 
-    def run(self, source_title: str, destination_title: str, time_limit: float=None) -> (list, int, int):
+    def run(self, source_title: str, destination_title: str, time_limit: float = None) -> (list, int, int):
         """
         Runs A* from the source title to the destination title till gets the time limit
         :param source_title: The opening state of the path

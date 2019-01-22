@@ -47,6 +47,6 @@ class FastTextAverage(FastText):
                 * vectors_filepath - path to weights vectors file that is used
         """
         return {
-            'type': 'fasttext_average',
+            'type': self._type,
             'vectors_filepath': PATH_TO_PRETRAINED_FASTTEXT_MODEL,
         }
