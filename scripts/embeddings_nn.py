@@ -112,7 +112,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--sgd-momentum', type=float, default=0.9)
     parser.add_argument('--adam-betas', nargs=2, type=float, default=(0.9, 0.999))
-    parser.add_argument('--adam-amsgrad', action='store_false')
+    parser.add_argument('--adam-amsgrad', action='store_true')
     parser.add_argument
     parser.add_argument('-o', '--out', required=True)
     parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
