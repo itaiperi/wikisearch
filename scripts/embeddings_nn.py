@@ -4,6 +4,8 @@ import os
 import time
 from importlib import import_module
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -58,6 +60,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
     """
     model.train()
     start = time.time()
+    batch_losses = []
     for batch_idx, (source, destination, min_distance) in enumerate(train_loader, 1):
         # Move tensors to relevant devices, and handle distances tensor.
         source, destination, min_distance = \
@@ -65,12 +68,15 @@ def train(args, model, device, train_loader, optimizer, epoch):
         optimizer.zero_grad()
         output = model(source, destination)
         loss = F.mse_loss(output, min_distance)
+        batch_losses.append(loss.item())
         loss.backward()
         optimizer.step()
         print_progress_bar(min(batch_idx * train_loader.batch_size, len(train_loader.dataset)),
                            len(train_loader.dataset), time.time() - start, prefix=f'Epoch {epoch + 1},',
-                           suffix=f'Loss: {loss.item():.1f}', length=50)
-    print()
+                           suffix=f'Average Loss: {np.mean(batch_losses):.1f}', length=50)
+
+    train_loss = np.mean(batch_losses)
+    return train_loss
 
 
 def test(args, model, device, test_loader):
@@ -84,6 +90,7 @@ def test(args, model, device, test_loader):
     """
     model.eval()
     test_loss = 0
+    test_start_time = time.time()
     with torch.no_grad():
         for source, destination, min_distance in test_loader:
             # Move tensors to relevant devices, and handle distances tensor.
@@ -93,7 +100,8 @@ def test(args, model, device, test_loader):
             test_loss += F.mse_loss(output, min_distance, reduction='sum').item()  # sum up batch loss
 
     test_loss /= len(test_loader.dataset)
-    print('-STAT- Test set: Average loss: {:.4f}\n'.format(test_loss))
+    print('-STAT- Test set: Average loss: {:.4f}, Time elapsed: {:.1f}s'.format(test_loss, time.time() - test_start_time))
+    return test_loss
 
 
 if __name__ == "__main__":
@@ -102,9 +110,11 @@ if __name__ == "__main__":
     parser.add_argument('-te', '--test', help='Path to testing file')
     parser.add_argument('-b', '--batch-size', type=int, default=16)
     parser.add_argument('-e', '--epochs', type=int, default=50)
-    parser.add_argument('--opt', choices=['SGD'], default='SGD')
+    parser.add_argument('--opt', choices=['SGD', 'Adam'], default='SGD')
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
-    parser.add_argument('--momentum', type=float, default=0.9)
+    parser.add_argument('--sgd-momentum', type=float, default=0.9)
+    parser.add_argument('--adam-betas', nargs=2, type=float, default=(0.9, 0.999))
+    parser.add_argument('--adam-amsgrad', action='store_true')
     parser.add_argument('-o', '--out', required=True)
     parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
@@ -118,32 +128,44 @@ if __name__ == "__main__":
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+    optimizer = None
+    if args.opt == 'SGD':
+        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.sgd_momentum)
+    elif args.opt == 'Adam':
+        optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=args.adam_betas, amsgrad=args.adam_amsgrad)
+    optimizer_meta = {"type": optimizer.__class__.__name__}
+    optimizer_meta.update(optimizer.defaults)
     metadata = {
         "training_set": args.train,
         "validation_set": args.test,
         "batch_size": args.batch_size,
         "epochs": args.epochs,
-        "optimizer": args.opt,
-        "optimizer_params": {
-            # TODO These are relevant in case of SGD. In case of other optimizer, might need to change
-            "learning_rate": args.lr,
-            "momentum": args.momentum,
-        },
+        "optimizer": optimizer_meta,
     }
     metadata['model'] = model.get_metadata()
     metadata['embedder'] = embedder.get_metadata()
     model_name = os.path.splitext(args.out)[0]
     with open(model_name + ".meta", 'w') as meta_file:
         json.dump(metadata, meta_file, indent=2)
+
     # Do train-test iterations, to train and check efficiency of model
+    train_losses = []
+    test_losses = []
+
     start_of_all = time.time()
     for epoch in range(args.epochs):
         train(args, model, device, train_loader, optimizer, epoch)
-        test(args, model, device, test_loader)
+        # Test the model on train and test sets, for progress tracking
+        train_losses.append(test(args, model, device, train_loader))
+        test_losses.append(test(args, model, device, test_loader))
+        print()
         # TODO save the best model here! should use return value from test function to see which model is best
+        plt.clf()
+        plt.plot(range(1, epoch + 2), train_losses, range(1, epoch + 2), test_losses)
+        plt.legend(['Average train loss', 'Average test loss'])
+        plt.savefig(model_name + '_losses.jpg')
 
     total_time = time.time() - start_of_all
     print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
