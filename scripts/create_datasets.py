@@ -4,6 +4,7 @@ import random
 import time
 from collections import defaultdict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tabulate
@@ -101,6 +102,17 @@ if __name__ == '__main__':
         # Save dataset (through dataframe)
         df.to_csv(dataset_path, header=True, index=False, sep='\t')
         runtimes[dataset_type] = time.time() - dataset_start
+
+        # Generate distances histogram
+        distance_occurrences = df['min_distance'].tolist()
+        distances_ticks = range(min(distance_occurrences), max(distance_occurrences) + 2)
+
+        plt.figure(figsize=(16, 9))
+        counts, _, _ = plt.hist(distance_occurrences, bins=distances_ticks, align='left')
+        plt.gca().set_xticks(distances_ticks[:-1])
+        for i, distance in enumerate(distances_ticks[:-1]):
+            plt.text(distance, counts[i] + 1, str(int(counts[i])))
+        plt.savefig(os.path.splitext(dataset_path)[0] + '_distance_histogram.jpg')
 
     # Create statistics for dataset
     statistics_df = pd.DataFrame(columns=['Dataset', 'Number of entries', 'Build time', 'Average build time/entry',
