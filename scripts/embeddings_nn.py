@@ -12,6 +12,7 @@ import torch.utils.data
 
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR, WIKI_LANG, PAGES
+from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS, EMBEDDINGS_MODULES
 from wikisearch.heuristics.nn_archs import EmbeddingsDistance
 
@@ -19,7 +20,8 @@ from wikisearch.heuristics.nn_archs import EmbeddingsDistance
 class DistanceDataset(torch.utils.data.Dataset):
     """
     Dataset class.
-    Supposed to give the whole size of the dataset, and return elements when accessed through [i]
+    Supposed to give the whole size of the dataset, and returns the vectored elements when accessed
+    through [i]
     """
 
     def __init__(self, path, embedder):
@@ -59,7 +61,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
     for batch_idx, (source, destination, min_distance) in enumerate(train_loader, 1):
         # Move tensors to relevant devices, and handle distances tensor.
         source, destination, min_distance = \
-            source.to(device), destination.to(device), min_distance.float().to(device).unsqueeze(1)
+            source, destination, min_distance.float().to(device).unsqueeze(1)
         optimizer.zero_grad()
         output = model(source, destination)
         loss = F.mse_loss(output, min_distance)
@@ -86,7 +88,7 @@ def test(args, model, device, test_loader):
         for source, destination, min_distance in test_loader:
             # Move tensors to relevant devices, and handle distances tensor.
             source, destination, min_distance = \
-                source.to(device), destination.to(device), min_distance.float().to(device).unsqueeze(1)
+                source, destination, min_distance.float().to(device).unsqueeze(1)
             output = model(source, destination)
             test_loss += F.mse_loss(output, min_distance, reduction='sum').item()  # sum up batch loss
 
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     embedder = embedding_class(WIKI_LANG, PAGES)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EmbeddingsDistance(300).to(device)
+    model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
@@ -136,7 +138,6 @@ if __name__ == "__main__":
     model_name = os.path.splitext(args.out)[0]
     with open(model_name + ".meta", 'w') as meta_file:
         json.dump(metadata, meta_file, indent=2)
-    exit(1)
     # Do train-test iterations, to train and check efficiency of model
     start_of_all = time.time()
     for epoch in range(args.epochs):

@@ -2,9 +2,9 @@ import datetime
 import pickle
 from abc import ABCMeta, abstractmethod
 
+import torch
 
 from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, PAGES, ENTRY_TEXT, ENTRY_ID
-from wikisearch.embeddings import EMBEDDINGS_MODULES
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -17,7 +17,8 @@ class Embedding(metaclass=ABCMeta):
         self._database = database
         self._collection = collection
         self._mongo_handler = MongoHandler(database, collection)
-        self._type = EMBEDDINGS_MODULES[self.__class__.__name__]
+        self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._type = self.__class__.__name__
 
     def _load_embedding(self, title):
         """
@@ -58,7 +59,7 @@ class Embedding(metaclass=ABCMeta):
         embedded_text_vector = self._embed(tokenized_text)
 
         self._store(page[ENTRY_ID], title, embedded_text_vector)
-        return embedded_text_vector
+        return embedded_text_vector.to(self._device)
 
     @staticmethod
     @abstractmethod
@@ -89,14 +90,13 @@ class Embedding(metaclass=ABCMeta):
         """
         return pickle.dumps(vector)
 
-    @staticmethod
-    def _decode_vector(vector):
+    def _decode_vector(self, vector):
         """
         Decodes the vector's value in the database to its original representation
         :param vector: The vector to decode
         :return: The decoded vector
         """
-        return pickle.loads(vector)
+        return pickle.loads(vector).to(self._device)
 
     @abstractmethod
     def _embed(self, tokenized_text):
