@@ -110,7 +110,10 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--epochs', type=int, default=50)
     parser.add_argument('--opt', choices=['SGD', 'Adam'], default='SGD')
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
-    parser.add_argument('--momentum', type=float, default=0.9)
+    parser.add_argument('--sgd-momentum', type=float, default=0.9)
+    parser.add_argument('--adam-betas', nargs=2, type=float, default=(0.9, 0.999))
+    parser.add_argument('--adam-amsgrad', action='store_false')
+    parser.add_argument
     parser.add_argument('-o', '--out', required=True)
     parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
@@ -128,9 +131,9 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
     optimizer = None
     if args.opt == 'SGD':
-        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.sgd_momentum)
     elif args.opt == 'Adam':
-        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+        optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=args.adam_betas, amsgrad=args.adam_amsgrad)
     optimizer_meta = {"type": optimizer.__class__.__name__}
     optimizer_meta.update(optimizer.defaults)
     metadata = {
