@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('-te', '--test', help='Path to testing file')
     parser.add_argument('-b', '--batch-size', type=int, default=16)
     parser.add_argument('-e', '--epochs', type=int, default=50)
-    parser.add_argument('--opt', choices=['SGD'], default='SGD')
+    parser.add_argument('--opt', choices=['SGD', 'Adam'], default='SGD')
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('-o', '--out', required=True)
@@ -124,20 +124,21 @@ if __name__ == "__main__":
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(300).to(device)
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+    optimizer = None
+    if args.opt == 'SGD':
+        optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    elif args.opt == 'Adam':
+        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer_meta = {"type": optimizer.__class__.__name__}
+    optimizer_meta.update(optimizer.defaults)
     metadata = {
         "training_set": args.train,
         "validation_set": args.test,
         "batch_size": args.batch_size,
         "epochs": args.epochs,
-        "optimizer": args.opt,
-        "optimizer_params": {
-            # TODO These are relevant in case of SGD. In case of other optimizer, might need to change
-            "learning_rate": args.lr,
-            "momentum": args.momentum,
-        },
+        "optimizer": optimizer_meta,
     }
     metadata['model'] = model.get_metadata()
     metadata['embedder'] = embedder.get_metadata()
