@@ -4,6 +4,8 @@ import os
 import time
 from importlib import import_module
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -56,6 +58,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
     """
     model.train()
     start = time.time()
+    batch_losses = []
     for batch_idx, (source, destination, min_distance) in enumerate(train_loader, 1):
         # Move tensors to relevant devices, and handle distances tensor.
         source, destination, min_distance = \
@@ -63,12 +66,15 @@ def train(args, model, device, train_loader, optimizer, epoch):
         optimizer.zero_grad()
         output = model(source, destination)
         loss = F.mse_loss(output, min_distance)
+        batch_losses.append(loss.item())
         loss.backward()
         optimizer.step()
         print_progress_bar(min(batch_idx * train_loader.batch_size, len(train_loader.dataset)),
                            len(train_loader.dataset), time.time() - start, prefix=f'Epoch {epoch + 1},',
-                           suffix=f'Loss: {loss.item():.1f}', length=50)
-    print()
+                           suffix=f'Average Loss: {np.mean(batch_losses):.1f}', length=50)
+
+    train_loss = np.mean(batch_losses)
+    return train_loss
 
 
 def test(args, model, device, test_loader):
@@ -82,6 +88,7 @@ def test(args, model, device, test_loader):
     """
     model.eval()
     test_loss = 0
+    test_start_time = time.time()
     with torch.no_grad():
         for source, destination, min_distance in test_loader:
             # Move tensors to relevant devices, and handle distances tensor.
@@ -91,7 +98,8 @@ def test(args, model, device, test_loader):
             test_loss += F.mse_loss(output, min_distance, reduction='sum').item()  # sum up batch loss
 
     test_loss /= len(test_loader.dataset)
-    print('-STAT- Test set: Average loss: {:.4f}\n'.format(test_loss))
+    print('-STAT- Test set: Average loss: {:.4f}, Time elapsed: {:.1f}s'.format(test_loss, time.time() - test_start_time))
+    return test_loss
 
 
 if __name__ == "__main__":
@@ -136,13 +144,23 @@ if __name__ == "__main__":
     model_name = os.path.splitext(args.out)[0]
     with open(model_name + ".meta", 'w') as meta_file:
         json.dump(metadata, meta_file, indent=2)
-    exit(1)
+
     # Do train-test iterations, to train and check efficiency of model
+    train_losses = []
+    test_losses = []
+
     start_of_all = time.time()
     for epoch in range(args.epochs):
         train(args, model, device, train_loader, optimizer, epoch)
-        test(args, model, device, test_loader)
+        # Test the model on train and test sets, for progress tracking
+        train_losses.append(test(args, model, device, train_loader))
+        test_losses.append(test(args, model, device, test_loader))
+        print()
         # TODO save the best model here! should use return value from test function to see which model is best
+        plt.clf()
+        plt.plot(range(1, epoch + 2), train_losses, range(1, epoch + 2), test_losses)
+        plt.legend(['Average train loss', 'Average test loss'])
+        plt.savefig(model_name + '_losses.jpg')
 
     total_time = time.time() - start_of_all
     print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
