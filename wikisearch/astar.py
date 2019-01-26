@@ -76,3 +76,7 @@ class Astar:
             parent = parents.get(parent, None)
 
         return parents_list
+
+    @staticmethod
+    def stringify_path(parents):
+        return ' -> '.join([parent.title for parent in parents])
