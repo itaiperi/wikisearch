@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 import torch
 
 from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, PAGES, ENTRY_TEXT, ENTRY_ID
+from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -57,6 +58,10 @@ class Embedding(metaclass=ABCMeta):
 
         tokenized_text = self.tokenize_text(text)
         embedded_text_vector = self._embed(tokenized_text)
+
+        # TODO: remove once the wtf-wikipedia parse lists correctly
+        if len(embedded_text_vector.size()) == 0:
+            embedded_text_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
 
         self._store(page[ENTRY_ID], title, embedded_text_vector)
         return embedded_text_vector.to(self._device)

@@ -26,7 +26,6 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
                                               'notice to not put a \'/\' after the file name')
     parser.add_argument('-df', '--dataset_file', help='Path to a dataset file')
-    parser.add_argument('-b', '--batch_size', type=int, default=16)
     args = parser.parse_args()
 
     model_dir_path = path.dirname(args.model)
@@ -54,7 +53,7 @@ if __name__ == "__main__":
     # Prepare the statistics table
     pd.set_option('display.max_columns', 10)
     pd.set_option('precision', 2)
-    statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST, ASTAR_DIST])
+    statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST])
     cost = UniformCost()
     heuristic = NNHeuristic(model, embedder)
     strategy = DefaultAstarStrategy()
@@ -63,20 +62,18 @@ if __name__ == "__main__":
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, actual_distance) in enumerate(dataset, 1):
-            _, astar_distance, _ = astar.run(tokenize_title(source), tokenize_title(destination))
+            # _, astar_distance, _ = astar.run(tokenize_title(source), tokenize_title(destination))
             statistics_df = statistics_df.append(
                 {
                     SRC_NODE: source,
                     DST_NODE: destination,
                     BFS_DIST: actual_distance,
-                    NN_DIST: model(embedder.embed(source), embedder.embed(destination)),
-                    ASTAR_DIST: astar_distance
+                    NN_DIST: model(embedder.embed(source).unsqueeze(0), embedder.embed(destination).unsqueeze(0)).item()
+                    # ASTAR_DIST: astar_distance
                 }, ignore_index=True)
-            print_progress_bar(idx, len(dataset.dataset), time.time() - start, prefix=f'Progress: ', length=50)
+            print_progress_bar(idx, len(dataset), time.time() - start, prefix=f'Progress: ', length=50)
 
-    # Print out statistics to file
+    # Print out the statistics to csv file
     statistics_file_path = path.join(model_dir_path, f"{model_file_name}.stats")
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
-    print(tabulate.tabulate(statistics_df, headers='keys', tablefmt='grid', floatfmt='.2f', showindex=False))
-    with open(statistics_file_path, 'w', encoding='utf8') as f:
-        f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'))
+    statistics_df.to_csv(statistics_file_path, sep=CSV_SEPARATOR, header=True, index=False)
