@@ -1,3 +1,5 @@
+import re
+
 from pymongo import MongoClient
 
 from wikisearch.consts.mongo import ENTRY_TITLE
@@ -15,6 +17,10 @@ class MongoHandler:
 
     def get_page(self, database, collection, title):
         return self._mongo_client[database][collection].find_one({'title': title})
+
+    def get_page_by_regex(self, database, collection, title_regex):
+        regex = re.compile(title_regex)
+        return self._mongo_client[database][collection].find_one({'title': regex})
 
     def get_collection(self, database, collection):
         return self._mongo_client[database][collection]

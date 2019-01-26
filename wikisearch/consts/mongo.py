@@ -3,6 +3,7 @@ import os
 # Consts for mongo
 ENTRY_ID = '_id'
 ENTRY_TITLE = "title"
+ENTRY_REDIRECT_TO = "redirectTo"
 ENTRY_CATEGORIZES = "categories"
 ENTRY_PID = "pageID"
 ENTRY_TEXT = "text"
