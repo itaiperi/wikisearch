@@ -4,7 +4,7 @@ options = {
 	file: process.argv[2],
 	db: 'simplewiki',
 	skip_redirects: false,
-	skip_disambig: true,
+	skip_disambig: false,
 	batch_size: 1000,
 	custom: function(doc) {
 	    function capitalizeEnglish(word) {
