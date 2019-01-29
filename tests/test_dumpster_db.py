@@ -31,7 +31,7 @@ class TestDumpsterParsing(unittest.TestCase):
             if ENTRY_TEXT in page:
                 tokenized_text = FastText.tokenize_text(page[ENTRY_TEXT])
                 if not len(tokenized_text):
-                    print(page[ENTRY_TITLE])
+                    print(f"Page {page[ENTRY_TITLE]} has no valuable text")
                     missing_text += 1
                 # TODO: once all the pages have valuable text, return the assertion and remove the prints
                 # self.assertTrue(len(tokenized_text), msg=f"Page {page[ENTRY_TITLE]} has no valuable text")
@@ -54,23 +54,24 @@ class TestDumpsterParsing(unittest.TestCase):
         for page in pages:
             if ENTRY_REDIRECT_TO in page:
                 if self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_REDIRECT_TO]) is None:
-                    print(page[ENTRY_TITLE])
+                    print(f"Page '{page[ENTRY_TITLE]}' redirects to page {page[ENTRY_REDIRECT_TO]} "
+                          f"which does't exist in {WIKI_LANG} database")
                 # TODO: once all the pages redirect to existing pages return the assertion and remove the prints
                 # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_REDIRECT_TO]),
-                #                      msg=f"Page {page[ENTRY_TITLE]} redirect to a page which does't exist in "
-                #                      f"{WIKI_LANG} database")
+                #                      msg=f"Page '{page[ENTRY_TITLE]}' redirects to page {page[ENTRY_REDIRECT_TO]} "
+                #                      f"which does't exist in {WIKI_LANG} database")
 
-    def test_link_pages_exist(self):
-        pages = self.mongo_handler.get_all_pages()
-        for page in pages:
-            if ENTRY_LINKS in page:
-                for link in page[ENTRY_LINKS]:
-                    if self.mongo_handler.get_page(WIKI_LANG, PAGES, link) is None:
-                        print(page[ENTRY_TITLE])
-                        # TODO: once all the pages' links exist return the assertion and remove the prints
-                        # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_LINKS]),
-                        #                      msg=f"Page {page[ENTRY_TITLE]} has link to {link} which does't "
-                        #                      f"exist in {WIKI_LANG} database")
+    # def test_link_pages_exist(self):
+    #     pages = self.mongo_handler.get_all_pages()
+    #     for page in pages:
+    #         if ENTRY_LINKS in page:
+    #             for link in page[ENTRY_LINKS]:
+    #                 if self.mongo_handler.get_page(WIKI_LANG, PAGES, link) is None:
+    #                     print(f"Page {page[ENTRY_TITLE]} has link to {link} which does't exist in {WIKI_LANG} database")
+    #                     # TODO: once all the pages' links exist return the assertion and remove the prints
+    #                     # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_LINKS]),
+    #                     #                      msg=f"Page {page[ENTRY_TITLE]} has link to {link} which does't "
+    #                     #                      f"exist in {WIKI_LANG} database")
 
 
 if __name__ == "__main__":
