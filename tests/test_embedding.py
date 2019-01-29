@@ -1,23 +1,23 @@
 import time
 
 from wikisearch.consts.mongo import WIKI_LANG, PAGES
-from wikisearch.embeddings import FastTextAverage, Word2VecAverage
+from wikisearch.embeddings import FastTextTextAverage, Word2VecTextAverage
 
 
 # Before running this test upload a coreNLPServer (from cmd and not from power shell!)
 def test_word2vec_average_flow_embedding():
-    embedding = Word2VecAverage(WIKI_LANG, PAGES)
+    embedding = Word2VecTextAverage(WIKI_LANG, PAGES)
     _test_embedding_timing(embedding)
 
 
 def test_fasttext_average_flow_embedding():
-    embedding = FastTextAverage(WIKI_LANG, PAGES)
+    embedding = FastTextTextAverage(WIKI_LANG, PAGES)
     _test_embedding_timing(embedding)
 
 
 def test_empty_vectors_recognition():
-    embedding_fasttext = FastTextAverage(WIKI_LANG, PAGES)
-    embedding_word2vec = Word2VecAverage(WIKI_LANG, PAGES)
+    embedding_fasttext = FastTextTextAverage(WIKI_LANG, PAGES)
+    embedding_word2vec = Word2VecTextAverage(WIKI_LANG, PAGES)
     title = "July 12"
     embedding_vector_fasttext = embedding_fasttext.embed(title)
     embedding_vector_word2vec = embedding_word2vec.embed(title)

@@ -5,7 +5,7 @@ from wikisearch.consts.paths import PATH_TO_PRETRAINED_WORD2VEC_MODEL
 from wikisearch.embeddings import Word2Vec
 
 
-class Word2VecAverage(Word2Vec):
+class Word2VecTextAverage(Word2Vec):
     """
     The class represents the word2vec embedding when a page's vector is calculated by taking an average
     of all the words in the page's text

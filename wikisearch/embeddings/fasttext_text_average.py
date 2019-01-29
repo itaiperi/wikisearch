@@ -5,7 +5,7 @@ from wikisearch.consts.paths import PATH_TO_PRETRAINED_FASTTEXT_MODEL
 from wikisearch.embeddings import FastText
 
 
-class FastTextAverage(FastText):
+class FastTextTextAverage(FastText):
     """
     The class represents the fasttext embedding when a page's vector is calculated by taking an average
     of all the words in the page's text
