@@ -6,6 +6,7 @@ options = {
 	skip_redirects: false,
 	skip_disambig: false,
 	batch_size: 1000,
+	workers: 1,
 	custom: function(doc) {
 	    function capitalizeEnglish(word) {
 	        letter = word[0]
