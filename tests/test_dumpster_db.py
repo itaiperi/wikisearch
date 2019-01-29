@@ -31,10 +31,10 @@ class TestDumpsterParsing(unittest.TestCase):
             if ENTRY_TEXT in page:
                 tokenized_text = FastText.tokenize_text(page[ENTRY_TEXT])
                 if not len(tokenized_text):
-                    print(f"Page {page[ENTRY_TITLE]} has no valuable text")
+                    print(f"Page '{page[ENTRY_TITLE]}' has no valuable text")
                     missing_text += 1
                 # TODO: once all the pages have valuable text, return the assertion and remove the prints
-                # self.assertTrue(len(tokenized_text), msg=f"Page {page[ENTRY_TITLE]} has no valuable text")
+                # self.assertTrue(len(tokenized_text), msg=f"Page '{page[ENTRY_TITLE]}' has no valuable text")
 
         print(f"Found {missing_text} missing text pages")
 
@@ -42,7 +42,7 @@ class TestDumpsterParsing(unittest.TestCase):
         pages = self.mongo_handler.get_all_pages()
         for page in pages:
             self.assertFalse(ENTRY_TEXT in page and ENTRY_REDIRECT_TO in page,
-                             msg=f"Page {page[ENTRY_TITLE]} should have only one of the fields {ENTRY_REDIRECT_TO}"
+                             msg=f"Page '{page[ENTRY_TITLE]}' should have only one of the fields '{ENTRY_REDIRECT_TO}'"
                              f" and {ENTRY_TEXT}")
 
     def test_there_are_no_redirect_categories(self):
@@ -54,11 +54,11 @@ class TestDumpsterParsing(unittest.TestCase):
         for page in pages:
             if ENTRY_REDIRECT_TO in page:
                 if self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_REDIRECT_TO]) is None:
-                    print(f"Page '{page[ENTRY_TITLE]}' redirects to page {page[ENTRY_REDIRECT_TO]} "
+                    print(f"Page '{page[ENTRY_TITLE]}' redirects to page '{page[ENTRY_REDIRECT_TO]}' "
                           f"which doesn't exist in {WIKI_LANG} database")
                 # TODO: once all the pages redirect to existing pages return the assertion and remove the prints
                 # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_REDIRECT_TO]),
-                #                      msg=f"Page '{page[ENTRY_TITLE]}' redirects to page {page[ENTRY_REDIRECT_TO]} "
+                #                      msg=f"Page '{page[ENTRY_TITLE]}' redirects to page '{page[ENTRY_REDIRECT_TO]}' "
                 #                      f"which doesn't exist in {WIKI_LANG} database")
 
     # def test_link_pages_exist(self):
@@ -67,10 +67,10 @@ class TestDumpsterParsing(unittest.TestCase):
     #         if ENTRY_LINKS in page:
     #             for link in page[ENTRY_LINKS]:
     #                 if self.mongo_handler.get_page(WIKI_LANG, PAGES, link) is None:
-    #                     print(f"Page {page[ENTRY_TITLE]} has link to {link} which doesn't exist in {WIKI_LANG} database")
+    #                     print(f"Page '{page[ENTRY_TITLE]}' has link to '{link}' which doesn't exist in {WIKI_LANG} database")
     #                     # TODO: once all the pages' links exist return the assertion and remove the prints
     #                     # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_LINKS]),
-    #                     #                      msg=f"Page {page[ENTRY_TITLE]} has link to {link} which doesn't "
+    #                     #                      msg=f"Page '{page[ENTRY_TITLE]}' has link to '{link}' which doesn't "
     #                     #                      f"exist in {WIKI_LANG} database")
 
 
