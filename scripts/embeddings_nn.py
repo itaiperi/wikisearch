@@ -166,8 +166,8 @@ if __name__ == "__main__":
         plt.plot(range(1, epoch + 2), train_losses, range(1, epoch + 2), test_losses)
         plt.legend(['Average train loss', 'Average test loss'])
         plt.savefig(model_name + '_losses.jpg')
+        torch.save(model.state_dict(), args.out)
 
     total_time = time.time() - start_of_all
     print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
           f"{total_time / 60}m -> {total_time / 3600}h")
-    torch.save(model.state_dict(), args.out)
