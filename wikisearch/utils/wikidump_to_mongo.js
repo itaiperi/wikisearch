@@ -36,7 +36,7 @@ options = {
                 return {
                     title: doc.title(),
                     // replace _ with a space, because of faults in the dump (redirections shouldn't have _), & with &amp;
-                    redirectTo: doc.redirectTo()['page'].replace(/_/g, ' ').replace(/& /g, '&amp; '),
+                    redirectTo: doc.redirectTo()['page'].replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').trim(),
                 }
             }
         }
@@ -44,7 +44,7 @@ options = {
         let links = doc.links().filter(link => {
             return !(link.type == 'external');
         // replace _ with a space, because of faults in the dump (links shouldn't have _), & with &amp;
-		}).map(link => capitalizeEnglish(link.page).replace(/_/g, ' ').replace(/& /g, '&amp; '));
+		}).map(link => capitalizeEnglish(link.page).replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').trim());
 		links = new Set(links);
 		links = [...links];
 
