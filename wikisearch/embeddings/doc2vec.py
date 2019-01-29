@@ -10,7 +10,7 @@ class Doc2Vec(Embedding):
     def __init__(self, database, collection):
         super(Doc2Vec, self).__init__(database, collection)
 
-    def _embed(self, tokenized_text):
+    def _embed(self, page):
         # TODO need to implement inference of vectors
         pass
 

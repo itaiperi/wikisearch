@@ -54,17 +54,15 @@ class Embedding(metaclass=ABCMeta):
             return vector
 
         page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
-        text = page[ENTRY_TEXT]
 
-        tokenized_text = self.tokenize_text(text)
-        embedded_text_vector = self._embed(tokenized_text)
+        embedded_vector = self._embed(page)
 
         # TODO: remove once the wtf-wikipedia parse lists correctly
-        if len(embedded_text_vector.size()) == 0:
-            embedded_text_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
+        if len(embedded_vector.size()) == 0:
+            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
 
-        self._store(page[ENTRY_ID], title, embedded_text_vector)
-        return embedded_text_vector.to(self._device)
+        self._store(page[ENTRY_ID], title, embedded_vector)
+        return embedded_vector.to(self._device)
 
     @staticmethod
     @abstractmethod
@@ -104,9 +102,9 @@ class Embedding(metaclass=ABCMeta):
         return pickle.loads(vector).to(self._device)
 
     @abstractmethod
-    def _embed(self, tokenized_text):
+    def _embed(self, page):
         """
         The embedding method uniquely per embedding type
-        :param tokenized_text: The text after it was tokenized
+        :param page: The text after it was tokenized
         """
         raise NotImplementedError

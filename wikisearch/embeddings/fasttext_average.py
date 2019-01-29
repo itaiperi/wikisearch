@@ -1,5 +1,6 @@
 import torch
 
+from wikisearch.consts.mongo import ENTRY_TEXT
 from wikisearch.consts.paths import PATH_TO_PRETRAINED_FASTTEXT_MODEL
 from wikisearch.embeddings import FastText
 
@@ -10,7 +11,8 @@ class FastTextAverage(FastText):
     of all the words in the page's text
     """
 
-    def _embed(self, tokenized_text):
+    def _embed(self, page):
+        tokenized_text = self.tokenize_text(page[ENTRY_TEXT])
         embedded_words = [self._model[tagged_word] for tagged_word in tokenized_text
                           if tagged_word in self._model.__dict__['vocab']]
 
