@@ -16,23 +16,38 @@ options = {
             }
         }
 
+        redirect_wikipedia_internal_regex = [
+            "H:.*", // Help
+            "T:.*", // Template
+            "MOS:.*", // Manual of Style
+            "WT:.*", // Wikipedia talks
+            "US:.*" // Hell knows...
+        ]
+        redirect_wikipedia_internal_regex = RegExp("^(" + redirect_wikipedia_internal_regex.join('|') + ")")
+
         if(doc.isRedirect()) {
             if(doc.redirectTo() == undefined) {
                 throw "Category redirect - Ignoring";
+            } else if (redirect_wikipedia_internal_regex.test(doc.title())) {
+                // Filter redirections which relate to wikipedia-internal related pages (like explanations regarding help, templates, etc.)
+                throw "Wikipedia-internal redirection - Ignoring";
             } else {
                 return {
                     title: doc.title(),
-                    redirectTo: doc.redirectTo()['page'],
+                    // replace _ with a space, because of faults in the dump (redirections shouldn't have _), & with &amp;
+                    redirectTo: doc.redirectTo()['page'].replace(/_/g, ' ').replace(/& /g, '&amp; '),
                 }
             }
         }
 
-		let links = doc.links().filter(link => {
-			return !(link.type == 'external');
-		}).map(link => capitalizeEnglish(link.page));
+        let links = doc.links().filter(link => {
+            return !(link.type == 'external');
+        // replace _ with a space, because of faults in the dump (links shouldn't have _), & with &amp;
+		}).map(link => capitalizeEnglish(link.page).replace(/_/g, ' ').replace(/& /g, '&amp; '));
 		links = new Set(links);
 		links = [...links];
-		return {
+
+        return {
 		    title: doc.title(),
 		    text: doc.text(),
 		    categories: doc.categories(),
@@ -40,4 +55,5 @@ options = {
 		};
 	}
 };
+
 dumpster(options, () => console.log('Parsing is Done!'));
