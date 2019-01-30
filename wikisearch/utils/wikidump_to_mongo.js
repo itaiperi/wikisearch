@@ -17,6 +17,14 @@ options = {
             }
         }
 
+        function processTitle(title) {
+            // replace _ with a space, because of faults in the dump (links shouldn't have _)
+            // replace & with &amp; (unless it's &amp)
+            // replace % with %25 to help decode handle % sign
+            // decodeURIWithEncode is used to turn things like %20 to space, etc.
+            return decodeURIComponent(capitalizeEnglish(title).replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').replace(/%( |$)/, '%25$1').trim())
+        }
+
         redirect_wikipedia_internal_regex = [
             "H:.*", // Help
             "T:.*", // Template
@@ -35,21 +43,19 @@ options = {
             } else {
                 return {
                     title: doc.title(),
-                    // replace _ with a space, because of faults in the dump (redirections shouldn't have _), & with &amp;
-                    redirectTo: doc.redirectTo()['page'].replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').trim(),
+                    redirectTo: processTitle(doc.redirectTo()['page']),
                 }
             }
         }
 
         let links = doc.links().filter(link => {
             return !(link.type == 'external');
-        // replace _ with a space, because of faults in the dump (links shouldn't have _), & with &amp;
-		}).map(link => capitalizeEnglish(link.page).replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').trim());
+        }).map(link => processTitle(link.page));
 		links = new Set(links);
 		links = [...links];
 
         return {
-		    title: doc.title(),
+		    title: processTitle(doc.title()),
 		    text: doc.text(),
 		    categories: doc.categories(),
 		    links: links,
