@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 import time
 from importlib import import_module
@@ -42,9 +43,18 @@ class DistanceDataset(torch.utils.data.Dataset):
         item_row = self._df.iloc[item]
         # Embed source and destination, and cast distance from string to integer.
         return \
-            self._embedder.embed(item_row['source']), \
-            self._embedder.embed(item_row['destination']), \
-            int(item_row['min_distance'])
+            self._embedder.embed(item_row["source"]), \
+            self._embedder.embed(item_row["destination"]), \
+            int(item_row["min_distance"])
+
+
+def early_stop(val_losses, best_val_loss, consequent_deteriorations):
+    if consequent_deteriorations == 0:
+        return False
+    loss_differences = np.array(val_losses[-consequent_deteriorations:]) - best_val_loss
+    # If all differences are >= 0, then there was no improvement in the last <consequent_deteriorations> epochs compared
+    # to best validation loss
+    return np.all(loss_differences >= 0)
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
@@ -60,7 +70,6 @@ def train(args, model, device, train_loader, optimizer, epoch):
     """
     model.train()
     start = time.time()
-    batch_losses = []
     for batch_idx, (source, destination, min_distance) in enumerate(train_loader, 1):
         # Move tensors to relevant devices, and handle distances tensor.
         source, destination, min_distance = \
@@ -68,15 +77,12 @@ def train(args, model, device, train_loader, optimizer, epoch):
         optimizer.zero_grad()
         output = model(source, destination)
         loss = F.mse_loss(output, min_distance)
-        batch_losses.append(loss.item())
         loss.backward()
         optimizer.step()
         print_progress_bar(min(batch_idx * train_loader.batch_size, len(train_loader.dataset)),
-                           len(train_loader.dataset), time.time() - start, prefix=f'Epoch {epoch + 1},',
-                           suffix=f'Average Loss: {np.mean(batch_losses):.1f}', length=50)
-
-    train_loss = np.mean(batch_losses)
-    return train_loss
+                           len(train_loader.dataset), time.time() - start, prefix=f"Epoch {epoch},",
+                           suffix=f"({batch_idx}/{math.ceil(len(train_loader.dataset) / train_loader.batch_size)}"
+                                    f" batches) Loss (prev. batch): {loss.item():.4f}", length=50)
 
 
 def test(args, model, device, test_loader):
@@ -97,31 +103,33 @@ def test(args, model, device, test_loader):
             source, destination, min_distance = \
                 source, destination, min_distance.float().to(device).unsqueeze(1)
             output = model(source, destination)
-            test_loss += F.mse_loss(output, min_distance, reduction='sum').item()  # sum up batch loss
+            # Take with reduction="sum" to sum instead of take mean, because we later divide by num of samples
+            test_loss += F.mse_loss(output, min_distance, reduction="sum").item()  # sum up batch loss
 
     test_loss /= len(test_loader.dataset)
-    print('-STAT- Test set: Average loss: {:.4f}, Time elapsed: {:.1f}s'.format(test_loss, time.time() - test_start_time))
+    print("-STAT- Test set: MSE loss: {:.4f}, Time elapsed: {:.1f}s".format(test_loss, time.time() - test_start_time))
     return test_loss
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-tr', '--train', help='Path to training file')
-    parser.add_argument('-te', '--test', help='Path to testing file')
-    parser.add_argument('-b', '--batch-size', type=int, default=16)
-    parser.add_argument('-e', '--epochs', type=int, default=50)
-    parser.add_argument('--opt', choices=['SGD', 'Adam'], default='SGD')
-    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
-    parser.add_argument('--sgd-momentum', type=float, default=0.9)
-    parser.add_argument('--adam-betas', nargs=2, type=float, default=(0.9, 0.999))
-    parser.add_argument('--adam-amsgrad', action='store_true')
-    parser.add_argument('-o', '--out', required=True)
-    parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
+    parser.add_argument("-tr", "--train", help="Path to training file")
+    parser.add_argument("-te", "--test", help="Path to testing file")
+    parser.add_argument("-b", "--batch-size", type=int, default=16)
+    parser.add_argument("-e", "--epochs", type=int, default=50)
+    parser.add_argument("--opt", choices=["SGD", "Adam"], default="SGD")
+    parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
+    parser.add_argument("--early-stop-epochs", type=int, default=0)
+    parser.add_argument("--sgd-momentum", type=float, default=0.9)
+    parser.add_argument("--adam-betas", nargs=2, type=float, default=(0.9, 0.999))
+    parser.add_argument("--adam-amsgrad", action="store_true")
+    parser.add_argument("-o", "--out", required=True)
+    parser.add_argument("--embedding", required=True, choices=AVAILABLE_EMBEDDINGS)
 
     args = parser.parse_args()
     # Loads dynamically the relevant embedding class. This is used for embedding entries later on!
-    embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[args.embedding]]),
-                                     package='wikisearch')
+    embedding_module = import_module(".".join(["wikisearch", "embeddings", EMBEDDINGS_MODULES[args.embedding]]),
+                                     package="wikisearch")
     embedding_class = getattr(embedding_module, args.embedding)
 
     embedder = embedding_class(WIKI_LANG, PAGES)
@@ -131,9 +139,9 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
     optimizer = None
-    if args.opt == 'SGD':
+    if args.opt == "SGD":
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.sgd_momentum)
-    elif args.opt == 'Adam':
+    elif args.opt == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=args.adam_betas, amsgrad=args.adam_amsgrad)
     optimizer_meta = {"type": optimizer.__class__.__name__}
     optimizer_meta.update(optimizer.defaults)
@@ -142,31 +150,58 @@ if __name__ == "__main__":
         "validation_set": args.test,
         "batch_size": args.batch_size,
         "epochs": args.epochs,
+        "last_trained_epoch": 0,
         "optimizer": optimizer_meta,
     }
-    metadata['model'] = model.get_metadata()
-    metadata['embedder'] = embedder.get_metadata()
+    metadata["model"] = model.get_metadata()
+    metadata["embedder"] = embedder.get_metadata()
     model_name = os.path.splitext(args.out)[0]
-    with open(model_name + ".meta", 'w') as meta_file:
+    with open(model_name + ".meta", "w") as meta_file:
         json.dump(metadata, meta_file, indent=2)
 
     # Do train-test iterations, to train and check efficiency of model
     train_losses = []
-    test_losses = []
+    val_losses = []
 
+    best_val_loss = float("inf")
     start_of_all = time.time()
-    for epoch in range(args.epochs):
+    for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
         # Test the model on train and test sets, for progress tracking
-        train_losses.append(test(args, model, device, train_loader))
-        test_losses.append(test(args, model, device, test_loader))
+        train_losses.append(round(test(args, model, device, train_loader), 4))
+        val_losses.append(round(test(args, model, device, test_loader), 4))
         print()
-        # TODO save the best model here! should use return value from test function to see which model is best
+
+        # Save best model
+        if val_losses[-1] < best_val_loss:
+            best_val_loss = val_losses[-1]
+            metadata["best_model"] = {
+                "epoch": epoch,
+                "train_loss": train_losses[-1],
+                "val_loss": val_losses[-1],
+            }
+            # Save the new model if it"s better
+            torch.save(model.state_dict(), args.out)
+
+        # Plot train and val losses
         plt.clf()
-        plt.plot(range(1, epoch + 2), train_losses, range(1, epoch + 2), test_losses)
-        plt.legend(['Average train loss', 'Average test loss'])
-        plt.savefig(model_name + '_losses.jpg')
-        torch.save(model.state_dict(), args.out)
+        plt.plot(range(1, epoch + 1), train_losses, range(1, epoch + 1), val_losses)
+        plt.legend(["Average train loss", "Average test loss"])
+        plt.savefig(model_name + "_losses.jpg")
+
+        # Save metadata again, with updated train and val loss history during training
+        metadata["loss_history"] = {
+            "train": train_losses,
+            "val": val_losses,
+        }
+        metadata["last_trained_epoch"] = epoch
+        with open(model_name + ".meta", "w") as meta_file:
+            json.dump(metadata, meta_file, indent=2)
+
+        # Early stop if there's no improvement in validation loss
+        if early_stop(val_losses, best_val_loss, args.early_stop_epochs):
+            print(f"-INFO- Early stop. last {args.early_stop_epochs} validation losses: {val_losses[-args.early_stop_epochs:]}")
+            break
 
     total_time = time.time() - start_of_all
     print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
