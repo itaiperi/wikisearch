@@ -18,11 +18,19 @@ options = {
         }
 
         function processTitle(title) {
-            // replace _ with a space, because of faults in the dump (links shouldn't have _)
-            // replace & with &amp; (unless it's &amp)
-            // replace % with %25 to help decode handle % sign
             // decodeURIWithEncode is used to turn things like %20 to space, etc.
-            return decodeURIComponent(capitalizeEnglish(title).replace(/_/g, ' ').replace(/&(?!amp)/g, '&amp;').replace(/%( |$)/, '%25$1').trim())
+            return decodeURIComponent(capitalizeEnglish(title)
+                // replace _ with a space, because of faults in the dump (links shouldn't have _)
+                .replace(/_/g, ' ')
+                // replace & with &amp; (unless it's &amp or &quot)
+//                .replace(/&(?!(amp|quot))/g, '&amp;')
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                // replace % with %25 to help decode handle % sign
+                .replace(/%(?![0-9A-F][0-9A-F])/g, '%25')
+                // replace multiple spaces with one space
+                .replace(/  +/g, ' ')
+                .trim())
         }
 
         redirect_wikipedia_internal_regex = [
@@ -34,15 +42,17 @@ options = {
         ]
         redirect_wikipedia_internal_regex = RegExp("^(" + redirect_wikipedia_internal_regex.join('|') + ")")
 
+        if (redirect_wikipedia_internal_regex.test(doc.title())) {
+            // Filter redirections which relate to wikipedia-internal related pages (like explanations regarding help, templates, etc.)
+            throw "Wikipedia-internal redirection - Ignoring";
+        }
+
         if(doc.isRedirect()) {
             if(doc.redirectTo() == undefined) {
                 throw "Category redirect - Ignoring";
-            } else if (redirect_wikipedia_internal_regex.test(doc.title())) {
-                // Filter redirections which relate to wikipedia-internal related pages (like explanations regarding help, templates, etc.)
-                throw "Wikipedia-internal redirection - Ignoring";
             } else {
                 return {
-                    title: doc.title(),
+                    title: processTitle(doc.title()),
                     redirectTo: processTitle(doc.redirectTo()['page']),
                 }
             }
@@ -57,7 +67,7 @@ options = {
         return {
 		    title: processTitle(doc.title()),
 		    text: doc.text(),
-		    categories: doc.categories(),
+		    categories: doc.categories().map(category => processTitle(category)),
 		    links: links,
 		};
 	}
