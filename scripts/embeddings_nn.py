@@ -6,6 +6,7 @@ import time
 from importlib import import_module
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -45,6 +46,15 @@ class DistanceDataset(torch.utils.data.Dataset):
             self._embedder.embed(item_row["source"]), \
             self._embedder.embed(item_row["destination"]), \
             int(item_row["min_distance"])
+
+
+def early_stop(val_losses, best_val_loss, consequent_deteriorations):
+    if consequent_deteriorations == 0:
+        return False
+    loss_differences = np.array(val_losses[-consequent_deteriorations:]) - best_val_loss
+    # If all differences are >= 0, then there was no improvement in the last <consequent_deteriorations> epochs compared
+    # to best validation loss
+    return np.all(loss_differences >= 0)
 
 
 def train(args, model, device, train_loader, optimizer, epoch):
@@ -109,6 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--epochs", type=int, default=50)
     parser.add_argument("--opt", choices=["SGD", "Adam"], default="SGD")
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
+    parser.add_argument("--early-stop-epochs", type=int, default=0)
     parser.add_argument("--sgd-momentum", type=float, default=0.9)
     parser.add_argument("--adam-betas", nargs=2, type=float, default=(0.9, 0.999))
     parser.add_argument("--adam-amsgrad", action="store_true")
@@ -186,6 +197,11 @@ if __name__ == "__main__":
         metadata["last_trained_epoch"] = epoch
         with open(model_name + ".meta", "w") as meta_file:
             json.dump(metadata, meta_file, indent=2)
+
+        # Early stop if there's no improvement in validation loss
+        if early_stop(val_losses, best_val_loss, args.early_stop_epochs):
+            print(f"-INFO- Early stop. last {args.early_stop_epochs} validation losses: {val_losses[-args.early_stop_epochs:]}")
+            break
 
     total_time = time.time() - start_of_all
     print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
