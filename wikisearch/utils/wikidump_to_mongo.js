@@ -67,7 +67,7 @@ options = {
         return {
 		    title: processTitle(doc.title()),
 		    text: doc.text(),
-		    categories: doc.categories(),
+		    categories: doc.categories().map(category => processTitle(category)),
 		    links: links,
 		};
 	}
