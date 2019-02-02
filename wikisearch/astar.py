@@ -19,7 +19,8 @@ class Astar:
         :param source_title: The opening state of the path
         :param destination_title: The goal state of the path
         :param time_limit: The time assigned to the algorithm to run
-        :return: The most successful path between the given titles and its length
+        :return: (path, path_length, developed_nodes_amount) - The most successful path between the given titles
+        and its length, the length of the path and how much nodes have been developed
         """
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(destination_title)

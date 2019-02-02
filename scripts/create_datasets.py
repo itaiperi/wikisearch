@@ -130,7 +130,6 @@ if __name__ == '__main__':
 
     # Print out statistics to file
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
-    print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'), )
+    print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'), )
     with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
-        f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='grid', floatfmt='.2f'))
-    print(f"-TIME- Total elapsed time for all datasets: {time.time() - entire_start:.1f}s")
+        f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'))

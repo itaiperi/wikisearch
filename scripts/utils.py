@@ -1,6 +1,7 @@
 import inspect
 import os
 import pickle
+import time
 
 
 def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, prefix: str = '', suffix: str = '',
@@ -25,6 +26,14 @@ def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, 
     # Print New Line on Complete
     if iteration == total:
         print()
+
+
+def timing(func, *args, **kwargs):
+    start = time.time()
+    result = func(*args, **kwargs)
+    if not isinstance(result, tuple):
+        result = (result,)
+    return result + (time.time() - start,)
 
 
 class Cache:
