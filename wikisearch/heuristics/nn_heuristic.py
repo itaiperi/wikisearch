@@ -14,4 +14,4 @@ class NNHeuristic(Heuristic):
         curr_embedding = self._embedder.embed(curr_state.title).unsqueeze(0)
         dest_embedding = self._embedder.embed(dest_state.title).unsqueeze(0)
 
-        return self._model(curr_embedding, dest_embedding).item()
+        return self._model(curr_embedding, dest_embedding).round().int().item()
