@@ -127,17 +127,14 @@ if __name__ == "__main__":
         f.write(statistics_df_tabulate)
 
     width = 0.3
-    bfs_distances_time, bfs_average_times, bfs_std_time = \
-        calculate_averages(bfs_distance_times, -width / 2)
-    bfs_distances_developed, bfs_average_developed, bfs_std_developed = \
-        calculate_averages(bfs_distance_developed, -width / 2)
-    nn_distances_time, nn_average_times, nn_std_time = \
-        calculate_averages(nn_distance_times, width / 2)
-    nn_distances_developed, nn_average_developed, nn_std_developed = \
-        calculate_averages(nn_distance_developed, width / 2)
 
     # Creates the distance-time statistics
-    plt.ylim(ymax=max(max(bfs_average_times), max(nn_average_times))+0.3)
+    bfs_distances_time, bfs_average_times, bfs_std_time = \
+        calculate_averages(bfs_distance_times, -width / 2)
+    nn_distances_time, nn_average_times, nn_std_time = \
+        calculate_averages(nn_distance_times, width / 2)
+
+    plt.ylim(ymax=max(max(bfs_std_time+bfs_average_times), max(nn_std_time+nn_average_times))*1.05)
     plt.title("A* running times")
     plt.xlabel("Distance")
     plt.ylabel("Time")
@@ -145,11 +142,18 @@ if __name__ == "__main__":
     plt.bar(nn_distances_time + width / 2, nn_average_times, yerr=nn_std_time, width=width, align='center')
     plt.legend([BFS_TIME, NN_TIME])
     plt.savefig(path.join(model_dir_path, "a_star_running_time.jpg"))
+    plt.show()
 
-    plt.clf()
+    plt.figure()
 
     # Creates the distance-#developed statistics
-    plt.ylim(ymax=max(max(bfs_average_times), max(nn_average_times)) + 0.3)
+    bfs_distances_developed, bfs_average_developed, bfs_std_developed = \
+        calculate_averages(bfs_distance_developed, -width / 2)
+    nn_distances_developed, nn_average_developed, nn_std_developed = \
+        calculate_averages(nn_distance_developed, width / 2)
+
+    plt.ylim(ymax=max(max(bfs_std_developed + bfs_average_developed),
+                      max(nn_std_developed + nn_average_developed))*1.05)
     plt.title("A* developed")
     plt.xlabel("Distance")
     plt.ylabel("#Developed")
