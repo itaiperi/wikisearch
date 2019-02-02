@@ -26,10 +26,6 @@ from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
 
 
-TIME = 'time'
-STD = 'std'
-
-
 def print_path(path_pr):
     return "->".join([f"'{node.title}'" for node in path_pr])
 
@@ -39,10 +35,10 @@ def calculate_averages(distances_times: dict, indent):
     average_times = []
     std = []
     for distance, distance_times in distances_times.items():
-        distances.append(distance)
-
         distance_times = np.array(distance_times)
         average_time = distance_times.mean()
+
+        distances.append(distance)
         average_times.append(average_time)
         std.append(distance_times.std())
 
@@ -90,7 +86,9 @@ if __name__ == "__main__":
     astar_nn = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
     dataset_len = len(dataset)
     bfs_distance_times = defaultdict(list)
+    bfs_distance_developed = defaultdict(list)
     nn_distance_times = defaultdict(list)
+    nn_distance_developed = defaultdict(list)
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
@@ -101,7 +99,9 @@ if __name__ == "__main__":
             nn_path, nn_dist, nn_developed, nn_time = \
                 timing(astar_nn.run, tokenized_source, tokenized_destination)
             bfs_distance_times[bfs_dist].append(bfs_time)
+            bfs_distance_developed[bfs_dist].append(bfs_developed)
             nn_distance_times[bfs_dist].append(nn_time)
+            nn_distance_developed[bfs_dist].append(nn_developed)
             statistics_df = statistics_df.append(
                 {
                     SRC_NODE: source,
@@ -127,15 +127,36 @@ if __name__ == "__main__":
         f.write(statistics_df_tabulate)
 
     width = 0.3
-    bfs_distances, bfs_average_times, bfs_std = calculate_averages(bfs_distance_times, -width/2)
-    nn_distances, nn_average_times, nn_std = calculate_averages(nn_distance_times, width/2)
+    bfs_distances_time, bfs_average_times, bfs_std_time = \
+        calculate_averages(bfs_distance_times, -width / 2)
+    bfs_distances_developed, bfs_average_developed, bfs_std_developed = \
+        calculate_averages(bfs_distance_developed, -width / 2)
+    nn_distances_time, nn_average_times, nn_std_time = \
+        calculate_averages(nn_distance_times, width / 2)
+    nn_distances_developed, nn_average_developed, nn_std_developed = \
+        calculate_averages(nn_distance_developed, width / 2)
 
+    # Creates the distance-time statistics
     plt.ylim(ymax=max(max(bfs_average_times), max(nn_average_times))+0.3)
     plt.title("A* running times")
     plt.xlabel("Distance")
     plt.ylabel("Time")
-    plt.bar(bfs_distances-width/2, bfs_average_times, yerr=bfs_std, width=width, align='center')
-    plt.bar(nn_distances+width/2, nn_average_times, yerr=nn_std, width=width, align='center')
+    plt.bar(bfs_distances_time - width / 2, bfs_average_times, yerr=bfs_std_time, width=width, align='center')
+    plt.bar(nn_distances_time + width / 2, nn_average_times, yerr=nn_std_time, width=width, align='center')
     plt.legend([BFS_TIME, NN_TIME])
     plt.savefig(path.join(model_dir_path, "a_star_running_time.jpg"))
+
+    plt.clf()
+
+    # Creates the distance-#developed statistics
+    plt.ylim(ymax=max(max(bfs_average_times), max(nn_average_times)) + 0.3)
+    plt.title("A* developed")
+    plt.xlabel("Distance")
+    plt.ylabel("#Developed")
+    plt.bar(bfs_distances_developed - width / 2, bfs_average_developed, yerr=bfs_std_developed,
+            width=width, align='center')
+    plt.bar(nn_distances_developed + width / 2, nn_average_developed, yerr=nn_std_developed,
+            width=width, align='center')
+    plt.legend([BFS_DEVELOPED, NN_DEVELOPED])
+    plt.savefig(path.join(model_dir_path, "a_star_#developed.jpg"))
     plt.show()
