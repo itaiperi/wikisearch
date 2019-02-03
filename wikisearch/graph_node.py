@@ -4,6 +4,12 @@ class GraphNode:
     """
 
     def __init__(self, title, pid, text, links):
+        """
+        :param title: title of the entry, string
+        :param pid: pageID, string
+        :param text: text of the entry, string
+        :param links: list of strings, which are titles of neighbors
+        """
         self._title = title
         self._pid = pid
         self._text = text

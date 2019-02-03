@@ -30,6 +30,8 @@ options = {
                 .replace(/%(?![0-9A-F][0-9A-F])/g, '%25')
                 // replace multiple spaces with one space
                 .replace(/  +/g, ' ')
+                // get rid of leading ':'. No entry's title starts with ':', but it does appear in redirect/links because of dump structure
+                .replace(/^:/, '')
                 .trim())
         }
 
