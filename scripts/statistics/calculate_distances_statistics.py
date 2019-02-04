@@ -10,7 +10,7 @@ import torch.utils.data
 from scripts.loaders import load_embedder_from_model_path, load_model
 from scripts.utils import print_progress_bar
 from wikisearch.astar import Astar
-from wikisearch.consts.mongo import WIKI_LANG, CSV_SEPARATOR
+from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.statistics_column_names import *
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     cost = UniformCost()
     heuristic = NNHeuristic(model, embedder)
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph(WIKI_LANG)
+    graph = WikiGraph()
     astar = Astar(cost, heuristic, strategy, graph)
     with torch.no_grad():
         start = time.time()

@@ -12,7 +12,7 @@ import torch.utils.data
 from scripts.loaders import load_embedder_from_model_path, load_model
 from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
-from wikisearch.consts.mongo import WIKI_LANG, CSV_SEPARATOR
+from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.statistics_column_names import *
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                                           NN_DIST, NN_TIME, NN_DEVELOPED, NN_PATH])
     cost = UniformCost()
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph(WIKI_LANG)
+    graph = WikiGraph()
     astar_bfs = Astar(cost, BFSHeuristic(), strategy, graph)
     astar_nn = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
     dataset_len = len(dataset)
@@ -98,6 +98,9 @@ if __name__ == "__main__":
             print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'Progress: ', length=50)
 
     # Print out the statistics as tabulate
+    model_dir_path = path.dirname(args.model)
+    model_file_name = path.splitext(path.basename(args.model))[0]
+
     statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
     statistics_df_tabulate = \

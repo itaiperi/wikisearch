@@ -38,7 +38,7 @@ args = parser.parse_args()
 cache = Cache()
 
 mongo = MongoHandler(WIKI_LANG, PAGES)
-pages_cursor = mongo.get_all_pages()
+pages_cursor = mongo.get_all_documents()
 start = time.time()
 
 # Sample pages as a training dataset (or whole database, if isn't too big) for Doc2Vec and corpus.

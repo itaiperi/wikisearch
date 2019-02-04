@@ -53,18 +53,18 @@ def clean_page(entry):
             ENTRY_PID: entry[ENTRY_PID]}
 
 
-class CleanData:
-    def __init__(self, wiki_lang):
-        self._mongo_handler = MongoHandler(wiki_lang, PAGES)
-
-        start = time.time()
-
-        with Pool(4) as pool:
-            clean_pages = list(pool.map(clean_page, self._mongo_handler.get_all_pages()))
-
-        self._mongo_handler.create_database_collection_with_data(CLEAN_WIKI, PAGES, clean_pages)
-        print(f"-TIME- Cleaning took {int(time.time() - start)}s")
-
-
 if __name__ == "__main__":
-    CleanData(WIKI_LANG)
+    mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
+
+    start = time.time()
+
+    with Pool(4) as pool:
+        clean_pages = list(pool.map(clean_page, mongo_handler_pages.get_all_documents()))
+
+    mongo_handler_embeddings = MongoHandler(CLEAN_WIKI, PAGES)
+    if mongo_handler_embeddings.is_empty_collection:
+        mongo_handler_embeddings.delete_collection_data()
+
+    mongo_handler_embeddings.insert_data(clean_pages)
+
+    print(f"-TIME- Cleaning took {int(time.time() - start)}s")

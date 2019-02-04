@@ -1,7 +1,6 @@
 import unittest
 
 from wikisearch.astar import Astar
-from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
@@ -13,7 +12,7 @@ class TestWikiGraphSearch(unittest.TestCase):
         self.cost = UniformCost()
         self.heuristic = BFSHeuristic()
         self.strategy = DefaultAstarStrategy()
-        self.graph = WikiGraph(WIKI_LANG)
+        self.graph = WikiGraph()
         self.astar = Astar(self.cost, self.heuristic, self.strategy, self.graph)
 
     def tearDown(self):

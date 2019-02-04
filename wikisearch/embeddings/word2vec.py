@@ -18,13 +18,11 @@ class Word2Vec(Embedding, ABC):
     The class representing the word2vec embedding and its derivatives
     """
 
-    def __init__(self, database, collection):
+    def __init__(self):
         """
         Load the embedding pre-trained model
-        :param database: The database to connect to this instance
-        :param collection: The collection to connect to this instance
         """
-        super(Word2Vec, self).__init__(database, collection)
+        super(Word2Vec, self).__init__()
         cache = Cache()
         start = time.time()
         self._model = cache['word2vec_model']

@@ -1,7 +1,5 @@
-import pickle
-
-from wikisearch.graph_node import GraphNode
 from wikisearch.consts.mongo import *
+from wikisearch.graph_node import GraphNode
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -10,12 +8,12 @@ class WikiGraph(dict):
     A graph containing all the wikipedia pages as nodes
     """
 
-    def __init__(self, wiki_lang):
+    def __init__(self):
         super(WikiGraph, self).__init__()
-        self._mongo_handler = MongoHandler(wiki_lang, PAGES)
+        self._mongo_handler = MongoHandler(WIKI_LANG, PAGES)
         self._redirects = {}
 
-        for entry in self._mongo_handler.get_all_pages():
+        for entry in self._mongo_handler.get_all_documents():
             # Handle redirections by inserting into redirects dict
             if ENTRY_REDIRECT_TO in entry:
                 self._redirects[entry[ENTRY_TITLE]] = entry[ENTRY_REDIRECT_TO]

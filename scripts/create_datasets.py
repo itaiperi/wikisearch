@@ -10,7 +10,6 @@ import pandas as pd
 import tabulate
 
 from scripts.utils import print_progress_bar, timing
-from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 
 # Options used for printing dataset summaries and statistics
@@ -75,7 +74,7 @@ if __name__ == '__main__':
 
     rnd_generator.seed(args.seed)  # If args.seed is None, system's time is used (default behavior)
 
-    graph = WikiGraph(WIKI_LANG)
+    graph = WikiGraph()
     graph_keys = sorted(graph.keys())
 
     entire_start = time.time()

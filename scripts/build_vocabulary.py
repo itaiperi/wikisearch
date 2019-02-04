@@ -2,10 +2,10 @@ import argparse
 import os
 import time
 
-from importlib import import_module
+from scripts.loaders import load_embedder
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_TEXT
-from wikisearch.embeddings import AVAILABLE_EMBEDDINGS, EMBEDDINGS_MODULES
+from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.utils.mongo_handler import MongoHandler
 
 parser = argparse.ArgumentParser()
@@ -15,18 +15,16 @@ parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
 args = parser.parse_args()
 
-# Dynamically load the relevant embedding class. This is used for tokenization later on!
-embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[args.embedding]]), package='wikisearch')
-embedding_class = getattr(embedding_module, args.embedding)
+embedding = load_embedder(args.embedding)
 
 mongo_handler = MongoHandler(WIKI_LANG, PAGES)
 
 entire_start = time.time()
 vocab = set()
-all_pages_cursor = mongo_handler.get_all_pages()
+all_pages_cursor = mongo_handler.get_all_documents()
 num_of_pages = all_pages_cursor.count()
 for i, page in enumerate(all_pages_cursor):
-    page_text = embedding_class.tokenize_text(page[ENTRY_TEXT])
+    page_text = embedding.tokenize_text(page[ENTRY_TEXT])
     vocab.update(page_text)
     print_progress_bar(i + 1, num_of_pages, time.time() - entire_start, prefix="Vocabulary build", length=50)
 

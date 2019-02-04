@@ -1,8 +1,9 @@
 import time
 
-from pymongo import MongoClient
+from wikisearch.consts.mongo import WIKI_LANG, PAGES
+from wikisearch.utils.mongo_handler import MongoHandler
 
-pages_collection = MongoClient().get_database("simplewiki").get_collection("pages")
+mongo_handler = MongoHandler(WIKI_LANG, PAGES)
 
 
 def capitalize_english(word):
@@ -18,12 +19,14 @@ def capitalize_english(word):
 
 def capitalize_page_links(page):
     page['links'] = [capitalize_english(link) for link in page['links']]
-    pages_collection.update_one({'title': page['title']}, {'$set': {'links': page['links']}})
+    updated_page = {'title': page['title'], 'links': page['links']}
+    mongo_handler.update_page(updated_page)
+
 
 start = time.time()
 batch_size = 2000
 
-for i, page in enumerate(pages_collection.find(), 1):
+for i, page in enumerate(mongo_handler.get_all_documents(), 1):
     capitalize_english(page)
     if not i % batch_size:
         print('-INFO- Processed {} pages...'.find(i))

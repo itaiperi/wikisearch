@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 
-from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, PAGES, ENTRY_ID
+from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.utils.mongo_handler import MongoHandler
 
@@ -14,10 +14,9 @@ class Embedding(metaclass=ABCMeta):
     Base class for representing an embedding type
     """
 
-    def __init__(self, database, collection):
-        self._database = database
-        self._collection = collection
-        self._mongo_handler = MongoHandler(database, collection)
+    def __init__(self):
+        self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
+        self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._type = self.__class__.__name__
 
@@ -27,12 +26,12 @@ class Embedding(metaclass=ABCMeta):
         :param title: the title to search its embedding in the database
         :return: the title's embedding, or None if doesn't exist
         """
-        page = self._mongo_handler.get_page(WIKI_LANG, EMBEDDINGS, title)
+        page = self._mongo_handler_embeddings.get_page(title)
         if page:
             vector = page.get(self.__class__.__name__.lower())
             return self._decode_vector(vector) if vector else None
 
-    def _store(self, page_id, title, vector):
+    def _store_embedding(self, page_id, title, vector):
         """
         Stores the title embedding in the database.
         :param page_id: The title's id in the original database
@@ -41,7 +40,7 @@ class Embedding(metaclass=ABCMeta):
         """
         page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): self._encode_vector(vector),
                 'last_modified': datetime.datetime.now().__str__()}
-        self._mongo_handler.update_page(WIKI_LANG, EMBEDDINGS, page)
+        self._mongo_handler_embeddings.update_page(page)
 
     def embed(self, title):
         """
@@ -53,14 +52,14 @@ class Embedding(metaclass=ABCMeta):
         if vector is not None:
             return vector.to(self._device)
 
-        page = self._mongo_handler.get_page(WIKI_LANG, PAGES, title)
+        page = self._mongo_handler_pages.get_page(title)
         embedded_vector = self._embed(page)
 
         # TODO: remove once the wtf-wikipedia parse lists correctly
         if len(embedded_vector.size()) == 0:
             embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE).to(self._device)
 
-        self._store(page[ENTRY_ID], title, embedded_vector)
+        self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)
 
     @staticmethod

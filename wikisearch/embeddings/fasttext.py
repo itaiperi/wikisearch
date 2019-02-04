@@ -17,13 +17,11 @@ class FastText(Embedding, ABC):
     The class representing the fasttext embedding and its derivatives
     """
 
-    def __init__(self, database, collection):
+    def __init__(self):
         """
         Load the embedding pre-trained model
-        :param database: The database to connect to this instance
-        :param collection: The collection to connect to this instance
         """
-        super(FastText, self).__init__(database, collection)
+        super(FastText, self).__init__()
         cache = Cache()
         start = time.time()
         self._model = cache['fasttext_model']

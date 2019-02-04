@@ -2,7 +2,6 @@ import argparse
 import time
 
 from wikisearch.astar import Astar
-from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
@@ -24,7 +23,7 @@ if __name__ == '__main__':
     cost = UniformCost()
     heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
-    graph = WikiGraph(WIKI_LANG)
+    graph = WikiGraph()
     astar = Astar(cost, heuristic, strategy, graph)
 
     start = time.time()

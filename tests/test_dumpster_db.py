@@ -1,7 +1,7 @@
 import time
 import unittest
 
-from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_REDIRECT_TO, ENTRY_TEXT, ENTRY_TITLE, ENTRY_LINKS
+from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_REDIRECT_TO, ENTRY_TEXT, ENTRY_TITLE
 from wikisearch.embeddings import FastText
 from wikisearch.graph import WikiGraph
 from wikisearch.utils.mongo_handler import MongoHandler
@@ -10,7 +10,7 @@ from wikisearch.utils.mongo_handler import MongoHandler
 class TestDumpsterParsing(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.graph = WikiGraph(WIKI_LANG)
+        cls.graph = WikiGraph()
 
     @classmethod
     def tearDownClass(cls):
@@ -26,14 +26,14 @@ class TestDumpsterParsing(unittest.TestCase):
         del self.mongo_handler
 
     def test_has_redirect_to_or_text_only(self):
-        pages = self.mongo_handler.get_all_pages()
+        pages = self.mongo_handler.get_all_documents()
         for page in pages:
             self.assertFalse(ENTRY_TEXT in page and ENTRY_REDIRECT_TO in page,
-                             msg=f"Page '{page[ENTRY_TITLE]}' should have only one of the fields '{ENTRY_REDIRECT_TO}'"
-                             f" and {ENTRY_TEXT}")
+                             msg=f"Page '{page[ENTRY_TITLE]}' should have only one of the fields "
+                             f"'{ENTRY_REDIRECT_TO}' and {ENTRY_TEXT}")
 
     def test_there_are_no_redirect_categories(self):
-        redirect_category_pages = self.mongo_handler.get_page_by_regex(WIKI_LANG, PAGES, "^CAT:")
+        redirect_category_pages = self.mongo_handler.get_page_by_regex("^CAT:")
         self.assertIsNone(redirect_category_pages)
 
     def test_redirect_page(self):
@@ -75,7 +75,7 @@ class TestDumpsterParsing(unittest.TestCase):
                 if self.graph.get_node(neighbor) is None:
                     print(f"Page '{page.title}' has link to '{neighbor}' which doesn't exist in {WIKI_LANG} database")
                     # TODO: once all the pages' links exist return the assertion and remove the prints
-                    # self.assertIsNotNone(self.mongo_handler.get_page(WIKI_LANG, PAGES, page[ENTRY_LINKS]),
+                    # self.assertIsNotNone(self.mongo_handler.get_page(page[ENTRY_LINKS]),
                     #                      msg=f"Page '{page[ENTRY_TITLE]}' has link to '{link}' which doesn't "
                     #                      f"exist in {WIKI_LANG} database")
 

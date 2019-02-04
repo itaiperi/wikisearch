@@ -1,10 +1,9 @@
 import argparse
 import time
-from importlib import import_module
 
+from scripts.loaders import load_embedder
 from scripts.utils import print_progress_bar
-from wikisearch.consts.mongo import WIKI_LANG, PAGES
-from wikisearch.embeddings import EMBEDDINGS_MODULES, AVAILABLE_EMBEDDINGS
+from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--in', '-i', dest='inp', required=True)
@@ -14,11 +13,7 @@ parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 args = parser.parse_args()
 
 # Loads dynamically the relevant embedding class.
-embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[args.embedding]]),
-                                 package='wikisearch')
-embedding_class = getattr(embedding_module, args.embedding)
-
-embedder = embedding_class(WIKI_LANG, PAGES)
+embedder = load_embedder(args.embedding)
 
 missing_counter = 0
 with open(args.inp, 'r', encoding='utf8') as in_file:

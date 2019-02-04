@@ -3,7 +3,6 @@ import json
 import math
 import os
 import time
-from importlib import import_module
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,10 +12,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 
+from scripts.loaders import load_embedder
 from scripts.utils import print_progress_bar
-from wikisearch.consts.mongo import CSV_SEPARATOR, WIKI_LANG, PAGES
+from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
-from wikisearch.embeddings import AVAILABLE_EMBEDDINGS, EMBEDDINGS_MODULES
+from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.heuristics.nn_archs import EmbeddingsDistance
 
 
@@ -127,12 +127,8 @@ if __name__ == "__main__":
     parser.add_argument("--embedding", required=True, choices=AVAILABLE_EMBEDDINGS)
 
     args = parser.parse_args()
-    # Loads dynamically the relevant embedding class. This is used for embedding entries later on!
-    embedding_module = import_module(".".join(["wikisearch", "embeddings", EMBEDDINGS_MODULES[args.embedding]]),
-                                     package="wikisearch")
-    embedding_class = getattr(embedding_module, args.embedding)
 
-    embedder = embedding_class(WIKI_LANG, PAGES)
+    embedder = load_embedder(args.embedding)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)

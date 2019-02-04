@@ -1,9 +1,7 @@
 import json
 from importlib import import_module
-
 from os import path
 
-from wikisearch.consts.mongo import WIKI_LANG, PAGES
 from wikisearch.embeddings import EMBEDDINGS_MODULES
 
 
@@ -15,8 +13,12 @@ def load_embedder_from_model_path(model_location_path):
     with open(path.join(model_dir_path, f"{model_file_name}.meta")) as f:
         model_metadata = json.load(f)
     embedding = model_metadata['embedder']['type']
-    embedding_module = import_module(
-        '.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[embedding]]),
-        package='wikisearch')
-    embedding_class = getattr(embedding_module, embedding)
-    return embedding_class(WIKI_LANG, PAGES)
+    return load_embedder(embedding)
+
+
+def load_embedder(embedder_type):
+    embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[embedder_type]]),
+                                     package='wikisearch')
+    embedding_class = getattr(embedding_module, embedder_type)
+
+    return embedding_class()
