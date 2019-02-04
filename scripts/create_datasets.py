@@ -56,7 +56,7 @@ def find_at_distance(graph, source_node, desired_distance):
 
     if not actual_distance:
         # Edge case, where there are no neighbors
-        return None, actual_distance
+        return None, actual_distance, 0
     # Return a random neighbor at actual_distance away from source page
     return rnd_generator.choice(list(current_distance_nodes)), actual_distance, nodes_developed
 
