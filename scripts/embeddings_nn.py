@@ -11,6 +11,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
+from torch.nn import MSELoss
 
 from scripts.loaders import load_embedder
 from scripts.utils import print_progress_bar
@@ -18,6 +19,9 @@ from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.heuristics.nn_archs import EmbeddingsDistance
+
+CRITERION_OPTIONS = ["MSELoss", "AsymmetricMSELoss"]
+OPTIMIZER_OPTIONS = ["SGD", "Adam"]
 
 
 class DistanceDataset(torch.utils.data.Dataset):
@@ -57,7 +61,24 @@ def early_stop(val_losses, best_val_loss, consequent_deteriorations):
     return np.all(loss_differences >= 0)
 
 
-def train(args, model, device, train_loader, optimizer, epoch):
+def AsymmetricMSELoss(alphas):
+    """
+    Creates an asymmetric MSE loss function, where alphas are the weights by which the loss gets multiplied for
+    loss < 0, loss > 0 respectively
+    :param alphas: weights. alphas[0] for loss < 0, alphas[1] for loss > 0
+    :return: function which accepts (input, target) and returns asymmetric loss
+    """
+    def asymmetric_mse_loss(input, target):
+        loss = F.mse_loss(input, target, reduction='none')
+        sign = (input - target).sign()
+        # Construct a vector of alpha coefficients depending on result of sign
+        alpha_coefficients = (sign < 0).type(input.dtype) * alphas[0] + (sign > 0).type(input.dtype) * alphas[1]
+        # Element-wise multiplication with coefficients
+        return (loss * alpha_coefficients).sum()
+    return asymmetric_mse_loss
+
+
+def train(args, model, device, train_loader, criterion, optimizer, epoch):
     """
     Training function for pytorch models
     :param args: arguments to be used (for example, from __main__)
@@ -76,7 +97,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
             source, destination, min_distance.float().to(device).unsqueeze(1)
         optimizer.zero_grad()
         output = model(source, destination)
-        loss = F.mse_loss(output, min_distance)
+        loss = criterion(output, min_distance)
         loss.backward()
         optimizer.step()
         print_progress_bar(min(batch_idx * train_loader.batch_size, len(train_loader.dataset)),
@@ -117,9 +138,13 @@ if __name__ == "__main__":
     parser.add_argument("-te", "--test", help="Path to testing file")
     parser.add_argument("-b", "--batch-size", type=int, default=16)
     parser.add_argument("-e", "--epochs", type=int, default=50)
-    parser.add_argument("--opt", choices=["SGD", "Adam"], default="SGD")
+    parser.add_argument("--crit", choices=CRITERION_OPTIONS, default="MSELoss", help="Criterion to calculate loss by")
+    parser.add_argument("--opt", choices=OPTIMIZER_OPTIONS, default="SGD", help="Optimizer to use")
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
-    parser.add_argument("--early-stop-epochs", type=int, default=0)
+    parser.add_argument("--early-stop-epochs", type=int, default=0,
+                        help="Number of consecutive epochs with no improvemnet to stop training")
+    parser.add_argument("--alphas", type=float, nargs=2, default=(1, 1),
+                        help="Weights for loss < 0 and loss > 0 for Asymmetric MSE Loss")
     parser.add_argument("--sgd-momentum", type=float, default=0.9)
     parser.add_argument("--adam-betas", nargs=2, type=float, default=(0.9, 0.999))
     parser.add_argument("--adam-amsgrad", action="store_true")
@@ -134,6 +159,16 @@ if __name__ == "__main__":
     model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
+
+    criterion = None
+    criterion_meta = {}
+    if args.crit == "MSELoss":
+        criterion = MSELoss()
+    elif args.crit == "AsymmetricMSELoss":
+        criterion = AsymmetricMSELoss(args.alphas)
+        criterion_meta["alphas"] = args.alphas
+    criterion_meta["type"] = criterion.__class_.__name__
+
     optimizer = None
     if args.opt == "SGD":
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.sgd_momentum)
@@ -141,12 +176,14 @@ if __name__ == "__main__":
         optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=args.adam_betas, amsgrad=args.adam_amsgrad)
     optimizer_meta = {"type": optimizer.__class__.__name__}
     optimizer_meta.update(optimizer.defaults)
+
     metadata = {
         "training_set": args.train,
         "validation_set": args.test,
         "batch_size": args.batch_size,
         "epochs": args.epochs,
         "last_trained_epoch": 0,
+        "criterion": criterion_meta,
         "optimizer": optimizer_meta,
     }
     metadata["model"] = model.get_metadata()
@@ -162,7 +199,7 @@ if __name__ == "__main__":
     best_val_loss = float("inf")
     start_of_all = time.time()
     for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch)
+        train(args, model, device, train_loader, criterion, optimizer, epoch)
         # Test the model on train and test sets, for progress tracking
         train_losses.append(round(test(args, model, device, train_loader), 4))
         val_losses.append(round(test(args, model, device, test_loader), 4))
