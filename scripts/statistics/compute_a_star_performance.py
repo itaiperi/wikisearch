@@ -32,18 +32,18 @@ def print_path(path_pr):
 
 def calculate_averages(distances_times: dict, indent):
     distances = []
-    average_times = []
+    average_values = []
     std = []
     for distance, distance_times in distances_times.items():
         distance_times = np.array(distance_times)
         average_time = distance_times.mean()
 
         distances.append(distance)
-        average_times.append(average_time)
+        average_values.append(average_time)
         std.append(distance_times.std())
 
         plt.text(distance+indent, average_time, str(round(average_time, 5)))
-    return np.array(distances), average_times, std
+    return np.array(distances), np.array(average_values), np.array(std)
 
 
 if __name__ == "__main__":
@@ -126,15 +126,14 @@ if __name__ == "__main__":
     with open(statistics_file_path, 'w', encoding='utf8') as f:
         f.write(statistics_df_tabulate)
 
+    # Creates the distance-time statistics
     width = 0.3
 
-    # Creates the distance-time statistics
     bfs_distances_time, bfs_average_times, bfs_std_time = \
         calculate_averages(bfs_distance_times, -width / 2)
     nn_distances_time, nn_average_times, nn_std_time = \
         calculate_averages(nn_distance_times, width / 2)
 
-    plt.ylim(ymax=max(max(bfs_std_time+bfs_average_times), max(nn_std_time+nn_average_times))*1.05)
     plt.title("A* running times")
     plt.xlabel("Distance")
     plt.ylabel("Time")
@@ -152,15 +151,13 @@ if __name__ == "__main__":
     nn_distances_developed, nn_average_developed, nn_std_developed = \
         calculate_averages(nn_distance_developed, width / 2)
 
-    plt.ylim(ymax=max(max(bfs_std_developed + bfs_average_developed),
-                      max(nn_std_developed + nn_average_developed))*1.05)
     plt.title("A* developed")
     plt.xlabel("Distance")
     plt.ylabel("#Developed")
-    plt.bar(bfs_distances_developed - width / 2, bfs_average_developed, yerr=bfs_std_developed,
-            width=width, align='center')
-    plt.bar(nn_distances_developed + width / 2, nn_average_developed, yerr=nn_std_developed,
-            width=width, align='center')
+    plt.bar(bfs_distances_developed - width / 2, bfs_average_developed,
+            yerr=bfs_std_developed, width=width, align='center')
+    plt.bar(nn_distances_developed + width / 2, nn_average_developed,
+            yerr=nn_std_developed, width=width, align='center')
     plt.legend([BFS_DEVELOPED, NN_DEVELOPED])
     plt.savefig(path.join(model_dir_path, "a_star_#developed.jpg"))
     plt.show()
