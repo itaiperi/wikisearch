@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import tabulate
 
-from scripts.utils import print_progress_bar
+from scripts.utils import print_progress_bar, timing
 from wikisearch.consts.mongo import WIKI_LANG
 from wikisearch.graph import WikiGraph
 
@@ -30,17 +30,21 @@ def find_at_distance(graph, source_node, desired_distance):
     :return: node at desired distance / shorter, if there are no nodes at such distance, and the real distance
     """
     if not list(source_node.neighbors):
-        return None, 0
+        return None, 0, 0
 
     actual_distance = 0
+    nodes_developed = 0
     current_distance_nodes = {source_node}
     all_nodes = set(current_distance_nodes)
 
     while actual_distance < desired_distance:
         # If neighbor has been found before, then there's a shorter path, and we don't add it to current
         # distance
-        next_distance_nodes = {neighbor for node in current_distance_nodes
-                               for neighbor in graph.get_node_neighbors(node)}
+        next_distance_nodes = [neighbor for node in current_distance_nodes
+                               for neighbor in graph.get_node_neighbors(node)]
+        nodes_developed += len(next_distance_nodes)
+        # After getting the number of nodes developed, we can get rid of duplicate nodes in the list
+        next_distance_nodes = set(next_distance_nodes)
         next_distance_nodes = next_distance_nodes - all_nodes
         all_nodes.update(next_distance_nodes)
         if next_distance_nodes:
@@ -52,9 +56,9 @@ def find_at_distance(graph, source_node, desired_distance):
 
     if not actual_distance:
         # Edge case, where there are no neighbors
-        return None, actual_distance
+        return None, actual_distance, 0
     # Return a random neighbor at actual_distance away from source page
-    return rnd_generator.choice(list(current_distance_nodes)), actual_distance
+    return rnd_generator.choice(list(current_distance_nodes)), actual_distance, nodes_developed
 
 
 if __name__ == '__main__':
@@ -76,7 +80,9 @@ if __name__ == '__main__':
 
     entire_start = time.time()
     distances = defaultdict(list)
+    developed_per_distance = defaultdict(list)
     runtimes = {}
+    runtimes_per_distance = defaultdict(list)
     # Go over all types of datasets
     for dataset_type, num_records in zip(dataset_types, args.num_records):
         dataset_start = time.time()
@@ -89,9 +95,11 @@ if __name__ == '__main__':
             distance = 0
             while dest is None:  # This is to make sure that the source node actually has neighbors in the first place
                 source = rnd_generator.choice(graph_keys)
-                dest, distance = find_at_distance(graph, graph.get_node(source), desired_distance)
+                dest, distance, developed, runtime = timing(find_at_distance, graph, graph.get_node(source), desired_distance)
             distances[dataset_type].append(distance)
             dataset.append((source, dest.title, distance))
+            runtimes_per_distance[distance].append(runtime)
+            developed_per_distance[distance].append(developed)
             print_progress_bar(i + 1, num_records, time.time() - dataset_start, prefix=dataset_type.capitalize(), length=50)
         print(f'-INFO- {dataset_type.capitalize()}: {num_records} datapoints created.')
 
@@ -108,10 +116,13 @@ if __name__ == '__main__':
         distances_ticks = range(min(distance_occurrences), max(distance_occurrences) + 2)
 
         plt.figure(figsize=(16, 9))
+        plt.title('Number of records/distance')
+        plt.xlabel('Distance')
+        plt.ylabel('Number of records')
         counts, _, _ = plt.hist(distance_occurrences, bins=distances_ticks, align='left')
         plt.gca().set_xticks(distances_ticks[:-1])
         for i, distance in enumerate(distances_ticks[:-1]):
-            plt.text(distance, counts[i] + 1, str(int(counts[i])))
+            plt.text(distance, counts[i] + 0.1, str(int(counts[i])))
         plt.savefig(os.path.splitext(dataset_path)[0] + '_distance_histogram.jpg')
 
     # Create statistics for dataset
@@ -133,3 +144,31 @@ if __name__ == '__main__':
     print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'), )
     with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
         f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'))
+
+    # Create histogram of running times per distance
+    runtimes_per_distance_averages = {k: np.mean(v) for k, v in runtimes_per_distance.items()}
+    runtimes_per_distance_stds = {k: np.std(v) for k, v in runtimes_per_distance.items()}
+    distances = sorted(runtimes_per_distance.keys())
+    plt.figure(figsize=(16, 9))
+    plt.title('Running times/distance')
+    plt.xlabel('Distance')
+    plt.ylabel('Running times (s)')
+    plt.bar(distances, [runtimes_per_distance_averages[distance] for distance in distances],
+            yerr=[runtimes_per_distance_stds[distance] for distance in distances])
+    for distance in distances:
+        plt.text(distance, runtimes_per_distance_averages[distance] + 0.1, str(round(runtimes_per_distance_averages[distance], 2)))
+    plt.savefig(os.path.join(args.out, 'distance_runtimes.jpg'))
+
+    # Create histogram of developed nodes per distance
+    developed_per_distance_averages = {k: np.mean(v) for k, v in developed_per_distance.items()}
+    developed_per_distance_stds = {k: np.std(v) for k, v in developed_per_distance.items()}
+    distances = sorted(runtimes_per_distance.keys())
+    plt.figure(figsize=(16, 9))
+    plt.title('Developed nodes/distance')
+    plt.xlabel('Distance')
+    plt.ylabel('Developed nodes')
+    plt.bar(distances, [developed_per_distance_averages[distance] for distance in distances],
+            yerr=[developed_per_distance_stds[distance] for distance in distances])
+    for distance in distances:
+        plt.text(distance, developed_per_distance_averages[distance] + 0.1, str(int(developed_per_distance_averages[distance])))
+    plt.savefig(os.path.join(args.out, 'distance_developed_nodes.jpg'))
