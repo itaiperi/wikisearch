@@ -1,8 +1,6 @@
 import argparse
-import json
 import time
 from collections import defaultdict
-from importlib import import_module
 from os import path
 
 import matplotlib.pyplot as plt
@@ -11,16 +9,14 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
+from scripts.loaders import load_embedder_from_model_path, load_model
 from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
-from wikisearch.consts.mongo import WIKI_LANG, PAGES, CSV_SEPARATOR
-from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.mongo import WIKI_LANG, CSV_SEPARATOR
 from wikisearch.consts.statistics_column_names import *
 from wikisearch.costs.uniform_cost import UniformCost
-from wikisearch.embeddings import EMBEDDINGS_MODULES
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
-from wikisearch.heuristics.nn_archs import EmbeddingsDistance
 from wikisearch.heuristics.nn_heuristic import NNHeuristic
 from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
@@ -53,24 +49,8 @@ if __name__ == "__main__":
     parser.add_argument('-df', '--dataset_file', help='Path to a dataset file')
     args = parser.parse_args()
 
-    model_dir_path = path.dirname(args.model)
-    model_file_name = path.splitext(path.basename(args.model))[0]
-
-    # Loads dynamically the relevant embedding class
-    with open(path.join(model_dir_path, f"{model_file_name}.meta")) as f:
-        model_metadata = json.load(f)
-    embedding = model_metadata['embedder']['type']
-    embedding_module = import_module(
-        '.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[embedding]]),
-        package='wikisearch')
-    embedding_class = getattr(embedding_module, embedding)
-    embedder = embedding_class(WIKI_LANG, PAGES)
-
-    # Loads the model
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
-    model.load_state_dict(torch.load(args.model, map_location=None if torch.cuda.is_available() else 'cpu'))
-    model.eval()
+    embedder = load_embedder_from_model_path(args.model)
+    model = load_model(args.model)
 
     # Loads the dataset file
     dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
