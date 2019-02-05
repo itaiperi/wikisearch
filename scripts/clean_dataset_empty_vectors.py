@@ -1,7 +1,7 @@
 import argparse
 import time
 
-from scripts.loaders import load_embedder
+from scripts.loaders import load_embedder_by_name
 from scripts.utils import print_progress_bar
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 
@@ -13,7 +13,7 @@ parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 args = parser.parse_args()
 
 # Loads dynamically the relevant embedding class.
-embedder = load_embedder(args.embedding)
+embedder = load_embedder_by_name(args.embedding)
 
 missing_counter = 0
 with open(args.inp, 'r', encoding='utf8') as in_file:

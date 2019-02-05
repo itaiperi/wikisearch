@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 
-from scripts.loaders import load_embedder
+from scripts.loaders import load_embedder_by_name
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_TEXT
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
@@ -15,7 +15,7 @@ parser.add_argument('--embedding', required=True, choices=AVAILABLE_EMBEDDINGS)
 
 args = parser.parse_args()
 
-embedding = load_embedder(args.embedding)
+embedding = load_embedder_by_name(args.embedding)
 
 mongo_handler = MongoHandler(WIKI_LANG, PAGES)
 

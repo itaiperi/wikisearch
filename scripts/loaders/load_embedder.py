@@ -13,10 +13,10 @@ def load_embedder_from_model_path(model_location_path):
     with open(path.join(model_dir_path, f"{model_file_name}.meta")) as f:
         model_metadata = json.load(f)
     embedding = model_metadata['embedder']['type']
-    return load_embedder(embedding)
+    return load_embedder_by_name(embedding)
 
 
-def load_embedder(embedder_type):
+def load_embedder_by_name(embedder_type):
     embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[embedder_type]]),
                                      package='wikisearch')
     embedding_class = getattr(embedding_module, embedder_type)
