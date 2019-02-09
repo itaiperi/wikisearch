@@ -68,13 +68,13 @@ def AsymmetricMSELoss(alphas):
     :param alphas: weights. alphas[0] for loss < 0, alphas[1] for loss > 0
     :return: function which accepts (input, target) and returns asymmetric loss
     """
-    def asymmetric_mse_loss(input, target):
-        loss = F.mse_loss(input, target, reduction='none')
+    def asymmetric_mse_loss(input, target, reduction="mean"):
+        loss = (input - target) ** 2
         sign = (input - target).sign()
         # Construct a vector of alpha coefficients depending on result of sign
         alpha_coefficients = (sign < 0).type(input.dtype) * alphas[0] + (sign > 0).type(input.dtype) * alphas[1]
         # Element-wise multiplication with coefficients
-        return (loss * alpha_coefficients).sum()
+        return (loss * alpha_coefficients).mean() if reduction == "mean" else (loss * alpha_coefficients).sum()
     return asymmetric_mse_loss
 
 
@@ -106,7 +106,7 @@ def train(args, model, device, train_loader, criterion, optimizer, epoch):
                                     f" batches) Loss (prev. batch): {loss.item():.4f}", length=50)
 
 
-def test(args, model, device, test_loader):
+def test(args, model, criterion, test_loader, device):
     """
     Training function for pytorch models
     :param args: arguments to be used (for example, from __main__)
@@ -201,8 +201,8 @@ if __name__ == "__main__":
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, criterion, optimizer, epoch)
         # Test the model on train and test sets, for progress tracking
-        train_losses.append(round(test(args, model, device, train_loader), 4))
-        val_losses.append(round(test(args, model, device, test_loader), 4))
+        train_losses.append(round(test(args, model, criterion, train_loader, device), 4))
+        val_losses.append(round(test(args, model, criterion, test_loader, device), 4))
         print()
 
         # Save best model
@@ -237,5 +237,5 @@ if __name__ == "__main__":
             break
 
     total_time = time.time() - start_of_all
-    print(f"-TIME- Total time took to train the model: {total_time - start_of_all:.1f}s -> "
-          f"{total_time / 60}m -> {total_time / 3600}h")
+    print(f"-TIME- Total time took to train the model: {total_time:.1f}s -> "
+          f"{total_time / 60:.2f}m -> {total_time / 3600:.3f}h")
