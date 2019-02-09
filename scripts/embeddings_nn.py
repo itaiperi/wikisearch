@@ -13,7 +13,7 @@ import torch.optim as optim
 import torch.utils.data
 from torch.nn import MSELoss
 
-from scripts.loaders import load_embedder
+from scripts.loaders import load_embedder_by_name
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    embedder = load_embedder(args.embedding)
+    embedder = load_embedder_by_name(args.embedding)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     elif args.crit == "AsymmetricMSELoss":
         criterion = AsymmetricMSELoss(args.alphas)
         criterion_meta["alphas"] = args.alphas
-    criterion_meta["type"] = criterion.__class_.__name__
+    criterion_meta["type"] = criterion.__class__.__name__
 
     optimizer = None
     if args.opt == "SGD":

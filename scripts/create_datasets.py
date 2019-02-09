@@ -91,7 +91,7 @@ if __name__ == '__main__':
             dest = None
             source = None
             desired_distance = rnd_generator.randint(1, args.max_distance)
-            distance = 0
+            distance, runtime, developed = 0, 0, 0
             while dest is None:  # This is to make sure that the source node actually has neighbors in the first place
                 source = rnd_generator.choice(graph_keys)
                 dest, distance, developed, runtime = timing(find_at_distance, graph, graph.get_node(source), desired_distance)

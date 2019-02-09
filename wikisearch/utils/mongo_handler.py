@@ -16,15 +16,15 @@ class MongoHandler:
         self._mongo_client = MongoClient()
         self._collection = self._mongo_client[database][collection]
 
-    def get_all_documents(self):
-        return self._collection.find()
+    def get_all_documents(self, projection=None):
+        return self._collection.find(projection=projection)
 
-    def get_page(self, title):
-        return self._collection.find_one({'title': title})
+    def get_page(self, title, projection=None):
+        return self._collection.find_one({'title': title}, projection=projection)
 
-    def get_page_by_regex(self, title_regex):
+    def get_page_by_regex(self, title_regex, projection=None):
         regex = re.compile(title_regex)
-        return self._collection.find_one({'title': regex})
+        return self._collection.find_one({'title': regex}, projection=projection)
 
     def project_page_by_field(self, field_name):
         return self._collection.find({}, {field_name: True})
