@@ -53,12 +53,12 @@ class DistanceDataset(torch.utils.data.Dataset):
 
 
 def early_stop(val_losses, best_val_loss, consequent_deteriorations):
-    if consequent_deteriorations == 0:
+    if consequent_deteriorations == 0 or len(val_losses) <= consequent_deteriorations:
         return False
     loss_differences = np.array(val_losses[-consequent_deteriorations:]) - best_val_loss
-    # If all differences are >= 0, then there was no improvement in the last <consequent_deteriorations> epochs compared
+    # If all differences are > 0, then there was no improvement in the last <consequent_deteriorations> epochs compared
     # to best validation loss
-    return np.all(loss_differences >= 0)
+    return np.all(loss_differences > 0)
 
 
 def AsymmetricMSELoss(alphas):

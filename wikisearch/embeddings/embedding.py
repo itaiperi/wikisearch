@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 
-from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES
+from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES, ENTRY_TITLE
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.utils.mongo_handler import MongoHandler
 
@@ -19,6 +19,8 @@ class Embedding(metaclass=ABCMeta):
         self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._type = self.__class__.__name__
+        self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self._type.lower()])
+                                   for doc in self._mongo_handler_embeddings.get_all_documents()}
 
     def _load_embedding(self, title):
         """
@@ -26,9 +28,17 @@ class Embedding(metaclass=ABCMeta):
         :param title: the title to search its embedding in the database
         :return: the title's embedding, or None if doesn't exist
         """
+        # Check if vector is cached in memory
+        vector = self._cached_embeddings.get(title)
+        if vector is not None:
+            return vector.to(self._device)
         page = self._mongo_handler_embeddings.get_page(title)
+        # TODO what happens if page is None? should this worry us? raise exception?
         if page:
             vector = page.get(self.__class__.__name__.lower())
+            if vector is not None:
+                # Cache in memory, for next use
+                self._cached_embeddings[title] = self._decode_vector(vector)
             return self._decode_vector(vector) if vector else None
 
     def _store_embedding(self, page_id, title, vector):
@@ -38,6 +48,8 @@ class Embedding(metaclass=ABCMeta):
         :param title: The titles to keep its embedding
         :param vector: The title's embedding
         """
+        if title not in self._cached_embeddings:
+            self._cached_embeddings[title] = vector
         page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): self._encode_vector(vector),
                 'last_modified': datetime.datetime.now().__str__()}
         self._mongo_handler_embeddings.update_page(page)
