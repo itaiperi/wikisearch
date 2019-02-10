@@ -221,6 +221,7 @@ if __name__ == "__main__":
         # Plot train and val losses
         plt.clf()
         plt.plot(range(1, epoch + 1), train_losses, range(1, epoch + 1), val_losses)
+        plt.axvline(metadata["best_model"]["epoch"], linestyle="--")
         plt.legend(["Average train loss", "Average test loss"])
         plt.savefig(model_name + "_losses.jpg")
 
