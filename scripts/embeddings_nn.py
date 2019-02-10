@@ -61,14 +61,14 @@ def early_stop(val_losses, best_val_loss, consequent_deteriorations):
     return np.all(loss_differences > 0)
 
 
-def AsymmetricMSELoss(alphas):
+def AsymmetricMSELoss(alphas, reduction="mean"):
     """
     Creates an asymmetric MSE loss function, where alphas are the weights by which the loss gets multiplied for
     loss < 0, loss > 0 respectively
     :param alphas: weights. alphas[0] for loss < 0, alphas[1] for loss > 0
     :return: function which accepts (input, target) and returns asymmetric loss
     """
-    def asymmetric_mse_loss(input, target, reduction="mean"):
+    def asymmetric_mse_loss(input, target):
         loss = (input - target) ** 2
         sign = (input - target).sign()
         # Construct a vector of alpha coefficients depending on result of sign
@@ -124,8 +124,9 @@ def test(args, model, criterion, test_loader, device):
             source, destination, min_distance = \
                 source, destination, min_distance.float().to(device).unsqueeze(1)
             output = model(source, destination)
-            # Take with reduction="sum" to sum instead of take mean, because we later divide by num of samples
-            test_loss += F.mse_loss(output, min_distance, reduction="sum").item()  # sum up batch loss
+            # because reduction is mean, we want to "convert" it to sum by multiplying by batch size to be able to
+            # handle uneven batch sizes (at end of data), and so we divide later by number of samples
+            test_loss += criterion(output, min_distance).item() * source.size(0)  # sum up batch loss
 
     test_loss /= len(test_loader.dataset)
     print("-STAT- Test set: MSE loss: {:.4f}, Time elapsed: {:.1f}s".format(test_loss, time.time() - test_start_time))
@@ -161,11 +162,12 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
 
     criterion = None
+    reduction = "mean"
     criterion_meta = {}
     if args.crit == "MSELoss":
-        criterion = MSELoss()
+        criterion = MSELoss(reduction=reduction)
     elif args.crit == "AsymmetricMSELoss":
-        criterion = AsymmetricMSELoss(args.alphas)
+        criterion = AsymmetricMSELoss(args.alphas, reduction=reduction)
         criterion_meta["alphas"] = args.alphas
     criterion_meta["type"] = criterion.__class__.__name__
 
