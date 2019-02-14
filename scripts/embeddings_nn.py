@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
 from torch.nn import MSELoss
@@ -78,7 +77,7 @@ def AsymmetricMSELoss(alphas, reduction="mean"):
     return asymmetric_mse_loss
 
 
-def train(args, model, device, train_loader, criterion, optimizer, epoch):
+def train_epoch(args, model, device, train_loader, criterion, optimizer, epoch):
     """
     Training function for pytorch models
     :param args: arguments to be used (for example, from __main__)
@@ -179,6 +178,9 @@ if __name__ == "__main__":
     optimizer_meta = {"type": optimizer.__class__.__name__}
     optimizer_meta.update(optimizer.defaults)
 
+    lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, verbose=True)
+    lr_scheduler_meta = lr_scheduler.state_dict()
+
     metadata = {
         "training_set": args.train,
         "validation_set": args.test,
@@ -187,6 +189,7 @@ if __name__ == "__main__":
         "last_trained_epoch": 0,
         "criterion": criterion_meta,
         "optimizer": optimizer_meta,
+        "lr_scheduler": lr_scheduler_meta,
     }
     metadata["model"] = model.get_metadata()
     metadata["embedder"] = embedder.get_metadata()
@@ -201,10 +204,12 @@ if __name__ == "__main__":
     best_val_loss = float("inf")
     start_of_all = time.time()
     for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, criterion, optimizer, epoch)
+        train_epoch(args, model, device, train_loader, criterion, optimizer, epoch)
         # Test the model on train and test sets, for progress tracking
         train_losses.append(round(test(args, model, criterion, train_loader, device), 4))
         val_losses.append(round(test(args, model, criterion, test_loader, device), 4))
+        # Update learning rate according to scheduler
+        lr_scheduler.step(val_losses[-1])
         print()
 
         # Save best model
