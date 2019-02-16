@@ -20,4 +20,4 @@ if __name__ == "__main__":
     start = time.time()
     for idx, page in enumerate(pages, 1):
         embedder.embed(page[ENTRY_TITLE])
-        print_progress_bar(idx, len_pages, time.time() - start, prefix=f'Embedding: ', length=50)
+        print_progress_bar(idx, len_pages, time.time() - start, prefix=f'Embedding', length=50)
