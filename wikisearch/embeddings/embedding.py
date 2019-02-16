@@ -20,7 +20,7 @@ class Embedding(metaclass=ABCMeta):
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._type = self.__class__.__name__
         self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self._type.lower()])
-                                   for doc in self._mongo_handler_embeddings.get_all_documents()}
+                                   for doc in self._mongo_handler_embeddings.get_all_documents() if self._type.lower() in doc}
 
     def _load_embedding(self, title):
         """
