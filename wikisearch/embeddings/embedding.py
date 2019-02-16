@@ -37,9 +37,10 @@ class Embedding(metaclass=ABCMeta):
         if page:
             vector = page.get(self.__class__.__name__.lower())
             if vector is not None:
+                decoded_vector = self._decode_vector(vector)
                 # Cache in memory, for next use
-                self._cached_embeddings[title] = self._decode_vector(vector)
-            return self._decode_vector(vector) if vector else None
+                self._cached_embeddings[title] = decoded_vector
+                return decoded_vector
 
     def _store_embedding(self, page_id, title, vector):
         """
