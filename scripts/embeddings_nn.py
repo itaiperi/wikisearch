@@ -13,11 +13,12 @@ import torch.utils.data
 from torch.nn import MSELoss
 
 from scripts.loaders import load_embedder_by_name
+from scripts.loaders.load_model import load_model_type
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
-from wikisearch.heuristics.nn_archs import EmbeddingsDistance1
+from wikisearch.heuristics.nn_archs import EmbeddingsDistance1, NN_ARCHS
 
 CRITERION_OPTIONS = ["MSELoss", "AsymmetricMSELoss"]
 OPTIMIZER_OPTIONS = ["SGD", "Adam"]
@@ -136,6 +137,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-tr", "--train", help="Path to training file")
     parser.add_argument("-te", "--test", help="Path to testing file")
+    parser.add_argument("-a", "--arch", choices=NN_ARCHS, help="NN Architecture to use")
     parser.add_argument("-b", "--batch-size", type=int, default=16)
     parser.add_argument("-e", "--epochs", type=int, default=50)
     parser.add_argument("--crit", choices=CRITERION_OPTIONS, default="MSELoss", help="Criterion to calculate loss by")
@@ -156,7 +158,7 @@ if __name__ == "__main__":
     embedder = load_embedder_by_name(args.embedding)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EmbeddingsDistance1(EMBEDDING_VECTOR_SIZE).to(device)
+    model = load_model_type(args.arch, EMBEDDING_VECTOR_SIZE)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
 

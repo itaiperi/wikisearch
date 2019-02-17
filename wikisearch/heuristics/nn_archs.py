@@ -63,7 +63,7 @@ class EmbeddingsDistance1(EmbeddingsDistance):
 # TODO add documentation
 class EmbeddingsDistance2(EmbeddingsDistance):
     def __init__(self, embed_dim):
-        super(EmbeddingsDistance2, self).__init__()
+        super(EmbeddingsDistance2, self).__init__(embed_dim)
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
         self.siamese_fc1 = nn.Linear(embed_dim, siamese_fc1_size)
