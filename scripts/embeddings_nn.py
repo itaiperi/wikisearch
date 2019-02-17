@@ -17,7 +17,7 @@ from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
-from wikisearch.heuristics.nn_archs import EmbeddingsDistance
+from wikisearch.heuristics.nn_archs import EmbeddingsDistance1
 
 CRITERION_OPTIONS = ["MSELoss", "AsymmetricMSELoss"]
 OPTIMIZER_OPTIONS = ["SGD", "Adam"]
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     embedder = load_embedder_by_name(args.embedding)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = EmbeddingsDistance(EMBEDDING_VECTOR_SIZE).to(device)
+    model = EmbeddingsDistance1(EMBEDDING_VECTOR_SIZE).to(device)
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
 

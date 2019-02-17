@@ -3,7 +3,7 @@ import cProfile
 import pstats
 
 from scripts.loaders import load_embedder_from_model_path
-from scripts.loaders import load_model
+from scripts.loaders import load_model_from_path
 from wikisearch.astar import Astar
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
@@ -18,7 +18,7 @@ def test_astar_time():
     args = parser.parse_args()
 
     embedder = load_embedder_from_model_path(args.model)
-    model = load_model(args.model)
+    model = load_model_from_path(args.model)
 
     cost = UniformCost()
     strategy = DefaultAstarStrategy()

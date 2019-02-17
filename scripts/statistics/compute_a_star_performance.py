@@ -9,7 +9,7 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
-from scripts.loaders import load_embedder_from_model_path, load_model
+from scripts.loaders import load_embedder_from_model_path, load_model_from_path
 from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import CSV_SEPARATOR
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     embedder = load_embedder_from_model_path(args.model)
-    model = load_model(args.model)
+    model = load_model_from_path(args.model)
 
     # Loads the dataset file
     dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
