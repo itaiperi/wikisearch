@@ -105,7 +105,7 @@ if __name__ == '__main__':
         # Create dataframe from dataset
         df = pd.DataFrame.from_records(dataset, columns=['source', 'destination', 'min_distance'])
         # Define path to save dataset to
-        dataset_path = os.path.abspath(os.path.join(args.out, '_'.join([dataset_type, str(args.seed), str(num_records)]) + '.csv'))
+        dataset_path = os.path.abspath(os.path.join(args.out, dataset_type + '.csv'))
         # Save dataset (through dataframe)
         df.to_csv(dataset_path, header=True, index=False, sep='\t')
         runtimes[dataset_type] = time.time() - dataset_start

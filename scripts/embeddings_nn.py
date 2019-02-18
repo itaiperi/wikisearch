@@ -147,7 +147,7 @@ if __name__ == "__main__":
                         help="Number of consecutive epochs with no improvemnet to stop training")
     parser.add_argument("--alphas", type=float, nargs=2, default=(1, 1),
                         help="Weights for loss < 0 and loss > 0 for Asymmetric MSE Loss")
-    parser.add_argument("--sgd-momentum", type=float, default=0.9)
+    parser.add_argument("--sgd-momentum", type=float, default=0)
     parser.add_argument("--adam-betas", nargs=2, type=float, default=(0.9, 0.999))
     parser.add_argument("--adam-amsgrad", action="store_true")
     parser.add_argument("-o", "--out", required=True)
@@ -196,6 +196,10 @@ if __name__ == "__main__":
     metadata["model"] = model.get_metadata()
     metadata["embedder"] = embedder.get_metadata()
     model_name = os.path.splitext(args.out)[0]
+
+    model_dir = os.path.dirname(args.out)
+    os.makedirs(model_dir, exist_ok=True)
+
     with open(model_name + ".meta", "w") as meta_file:
         json.dump(metadata, meta_file, indent=2)
 
