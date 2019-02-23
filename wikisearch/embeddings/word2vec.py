@@ -33,6 +33,10 @@ class Word2Vec(Embedding, ABC):
 
     @staticmethod
     def tokenize_text(text):
+        """
+        Tokenizes the title's text by the embedding class
+        :param title: The title to tokenize its text
+        """
         # Filters out external links
         text = ' '.join([word for word in text.split() if "https://" not in word and "http://" not in word])
         # Start the coreNLPServer separately

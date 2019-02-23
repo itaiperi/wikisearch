@@ -75,15 +75,6 @@ class Embedding(metaclass=ABCMeta):
         self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)
 
-    @staticmethod
-    @abstractmethod
-    def tokenize_text(title):
-        """
-        Tokenizes the title's text by the embedding class
-        :param title: The title to tokenize its text
-        """
-        raise NotImplementedError
-
     @abstractmethod
     def get_metadata(self):
         """
