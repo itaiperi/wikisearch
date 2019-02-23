@@ -95,7 +95,7 @@ if __name__ == "__main__":
                     NN_DEVELOPED: nn_developed,
                     NN_PATH: print_path(nn_path)
                 }, ignore_index=True)
-            print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'Progress: ', length=50)
+            print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'A*', length=50)
 
     # Print out the statistics as tabulate
     model_dir_path = path.dirname(args.model)
