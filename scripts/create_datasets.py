@@ -143,7 +143,7 @@ if __name__ == '__main__':
     # Print out statistics to file
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
     print(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'), )
-    with open(os.path.join(args.out, 'stats.txt'), 'w') as f:
+    with open(os.path.join(args.out, 'datasets_stats.txt'), 'w') as f:
         f.write(tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.2f'))
 
     # Create histogram of running times per distance
