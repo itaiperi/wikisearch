@@ -2,6 +2,7 @@ import argparse
 import itertools
 import os
 import subprocess
+import sys
 from multiprocessing import cpu_count
 from multiprocessing.pool import Pool
 
@@ -40,8 +41,8 @@ all_models_params = nn_archs + embeddings + criterions + sgd + adam
 
 def train_and_test_model(model_params):
     params_str = " ".join([" ".join([str(k), str(v)]) for k, v in model_params.items()])
-    train_command = f"python /media/Data/Projects/wikisearch/scripts/embeddings_nn.py {params_str}"
-    test_command = f"python /media/Data/Projects/wikisearch/scripts/statistics/calculate_distances_statistics.py -m {params['-o']} -df {params['-te']}"
+    train_command = f"python {os.path.join(sys.path[0], 'embeddings_nn.py')} {params_str}"
+    test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m {params['-o']} -df {params['-te']}"
     print(train_command)
     subprocess.call(train_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'train.log'), 'w'))
     print(test_command)
@@ -51,17 +52,30 @@ def train_and_test_model(model_params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(dest="dataset_dir", help="Directory where dataset train, val, test files are")
-    parser.add_argument('-o', '--out', required=True, help="Directory to which models will be written")
+    parser.add_argument('-o', '--out', help="Directory to which models will be written (Default: dataset directory")
     parser.add_argument("-w", "--num-workers", default=1, type=int)
     args = parser.parse_args()
 
     train_file = os.path.join(args.dataset_dir, "train.csv")
     validation_file = os.path.join(args.dataset_dir, "validation.csv")
+    if args.out is None:
+        args.out = args.dataset_dir
 
-    for params in all_models_params:
+    def model_already_exists(params):
+        # Filter models that were already run in the past
         model_dir = '_'.join([params['--embedding'], params['--arch'], params['--crit'], params['--opt']] +
                              ([params['--alphas']] if '--alphas' in params else []))
         model_dir = model_dir.lower().replace(' ', '_')
+        return os.path.exists(model_dir)
+
+    all_models_params[:] = [params for params in all_models_params if not model_already_exists(params)]
+
+    for params in all_models_params:
+        model_dir = '_'.join([params['--embedding'], params['--arch'], params['--crit'], params['--opt'],
+                              params['--lr'], params['-b']] +
+                             ([params['--alphas']] if '--alphas' in params else []))
+        model_dir = model_dir.lower().replace(' ', '_')
+        os.makedirs(model_dir)
         params['-tr'] = train_file
         params['-te'] = validation_file
         params['-o'] = os.path.join(args.out, model_dir, 'model.pth')
