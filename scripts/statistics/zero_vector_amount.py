@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     zeros_vectors = [page[ENTRY_TITLE]
                      for page in embedder._mongo_handler_embeddings.get_all_documents()
-                     if torch.all(embedder._decode_vector(page[embedder.__class__.__name__.lower()]) == torch.zeros(EMBEDDING_VECTOR_SIZE))]
+                     if torch.all(embedder._decode_vector(page[embedder.__class__.__name__.lower()]) == torch.zeros(EMBEDDING_VECTOR_SIZE[embedder.type]))]
 
     zeros_vectors = "\n".join(zeros_vectors)
     with open(os.path.join(args.output, "zero_vectors.txt"), "w", encoding="utf8") as f:

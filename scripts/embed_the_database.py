@@ -16,7 +16,7 @@ def get_page_embedding(embedder, page_pr):
     embedded_vector = embedder._embed(page_pr)
 
     if len(embedded_vector.size()) == 0:
-        embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
+        embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE[embedder.type])
 
     return (embedder.__class__.__name__.lower(), embedder._encode_vector(embedded_vector))
 

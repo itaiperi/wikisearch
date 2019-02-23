@@ -18,9 +18,9 @@ class Embedding(metaclass=ABCMeta):
         self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
         self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
-        self._type = self.__class__.__name__
-        self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self._type.lower()])
-                                   for doc in self._mongo_handler_embeddings.get_all_documents() if self._type.lower() in doc}
+        self.type = self.__class__.__name__
+        self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self.type.lower()])
+                                   for doc in self._mongo_handler_embeddings.get_all_documents() if self.type.lower() in doc}
 
     def _load_embedding(self, title):
         """
@@ -70,7 +70,7 @@ class Embedding(metaclass=ABCMeta):
 
         # TODO: remove once the wtf-wikipedia parse lists correctly
         if len(embedded_vector.size()) == 0:
-            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
+            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE[self.type])
 
         self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)

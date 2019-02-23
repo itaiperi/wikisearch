@@ -61,6 +61,6 @@ class Word2Vec(Embedding, ABC):
                 * vectors_filepath - path to weights vectors file that is used
         """
         return {
-            'type': self._type,
+            'type': self.type,
             'vectors_filepath': PATH_TO_PRETRAINED_WORD2VEC_MODEL,
         }

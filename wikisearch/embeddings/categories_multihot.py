@@ -9,7 +9,7 @@ class CategoriesMultiHot(Embedding):
     def __init__(self):
         super(CategoriesMultiHot, self).__init__()
         categories_mongo = MongoHandler(WIKI_LANG, CATEGORIES)
-        categories = categories_mongo.get_all_documents()[0][CATEGORIES]
+        categories = categories_mongo.get_page(CATEGORIES)[CATEGORIES]
         self._categories_map = {category: i for i, category in enumerate(categories)}
 
     def get_metadata(self):
@@ -20,7 +20,7 @@ class CategoriesMultiHot(Embedding):
                 * type - name of embedding (fasttext, word2vec, etc.)
         """
         return {
-            'type': self._type,
+            'type': self.type,
         }
 
     def _embed(self, page):

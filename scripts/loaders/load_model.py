@@ -18,7 +18,7 @@ def load_model_from_path(model_location_path):
     return model
 
 
-def load_model_type(model_type, embedding_size=EMBEDDING_VECTOR_SIZE):
+def load_model_type(model_type, embedding_size):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     nn_arch_module = import_module('.'.join(['wikisearch', 'heuristics', 'nn_archs']), package='wikisearch')
     embedding_class = getattr(nn_arch_module, model_type)

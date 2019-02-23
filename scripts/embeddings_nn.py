@@ -158,7 +158,7 @@ if __name__ == "__main__":
     embedder = load_embedder_by_name(args.embedding)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = load_model_type(args.arch, EMBEDDING_VECTOR_SIZE)
+    model = load_model_type(args.arch, EMBEDDING_VECTOR_SIZE[embedder.type])
     train_loader = torch.utils.data.DataLoader(DistanceDataset(args.train, embedder), batch_size=args.batch_size)
     test_loader = torch.utils.data.DataLoader(DistanceDataset(args.test, embedder), batch_size=args.batch_size)
 
