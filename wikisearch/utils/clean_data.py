@@ -47,7 +47,7 @@ def clean_page(entry):
     # print(f"Cleaning: {entry[ENTRY_TITLE]}")
     # print(entry[ENTRY_TITLE])
     return {ENTRY_TITLE: tokenize_title(entry[ENTRY_TITLE]),
-            ENTRY_CATEGORIZES: entry[ENTRY_CATEGORIZES],
+            ENTRY_CATEGORIES: entry[ENTRY_CATEGORIES],
             ENTRY_TEXT: tokenize_text(entry[ENTRY_TEXT]),
             ENTRY_LINKS: tokenize_links(entry[ENTRY_LINKS]),
             ENTRY_PID: entry[ENTRY_PID]}

@@ -28,13 +28,14 @@ def find_at_distance(graph, source_node, desired_distance):
     :param desired_distance: distance (minimal) at which a node should be found
     :return: node at desired distance / shorter, if there are no nodes at such distance, and the real distance
     """
-    if not list(source_node.neighbors):
+    if not list(graph.get_node_neighbors(source_node)):
         return None, 0, 0
 
     actual_distance = 0
     nodes_developed = 0
     current_distance_nodes = {source_node}
     all_nodes = set(current_distance_nodes)
+    nodes_at_distances = []
 
     while actual_distance < desired_distance:
         # If neighbor has been found before, then there's a shorter path, and we don't add it to current
@@ -45,6 +46,7 @@ def find_at_distance(graph, source_node, desired_distance):
         # After getting the number of nodes developed, we can get rid of duplicate nodes in the list
         next_distance_nodes = set(next_distance_nodes)
         next_distance_nodes = next_distance_nodes - all_nodes
+        nodes_at_distances.append(next_distance_nodes)
         all_nodes.update(next_distance_nodes)
         if next_distance_nodes:
             actual_distance += 1
@@ -53,11 +55,9 @@ def find_at_distance(graph, source_node, desired_distance):
             # No neighboring nodes (in shortest distance), so we break and choose one at random
             break
 
-    if not actual_distance:
-        # Edge case, where there are no neighbors
-        return None, actual_distance, 0
-    # Return a random neighbor at actual_distance away from source page
-    return rnd_generator.choice(list(current_distance_nodes)), actual_distance, nodes_developed
+    actual_distance = desired_distance if actual_distance == desired_distance else rnd_generator.randint(1, actual_distance)
+    # Return a random neighbor at actual_distance (which may also be desired distance) away from source page
+    return rnd_generator.choice(list(nodes_at_distances[actual_distance - 1])), actual_distance, nodes_developed
 
 
 if __name__ == '__main__':
@@ -71,6 +71,8 @@ if __name__ == '__main__':
 
     if args.max_distance < 1:
         raise ValueError('Distance is not a positive integer')
+
+    os.makedirs(args.out, exist_ok=True)
 
     rnd_generator.seed(args.seed)  # If args.seed is None, system's time is used (default behavior)
 
