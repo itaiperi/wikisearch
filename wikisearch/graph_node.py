@@ -3,7 +3,7 @@ class GraphNode:
     A Node in the wikipedia graph. Each node represents a page in wikipedia
     """
 
-    def __init__(self, title, pid, text, links):
+    def __init__(self, title, pid, text, links, categories):
         """
         :param title: title of the entry, string
         :param pid: pageID, string
@@ -14,6 +14,7 @@ class GraphNode:
         self._pid = pid
         self._text = text
         self._links = links
+        self._categories = categories
 
     @property
     def title(self):
@@ -28,6 +29,10 @@ class GraphNode:
         The node's pid
         """
         return self._pid
+
+    @property
+    def categories(self):
+        return self._categories
 
     @property
     def neighbors(self):

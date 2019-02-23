@@ -19,11 +19,11 @@ class WikiGraph(dict):
                 self._redirects[entry[ENTRY_TITLE]] = entry[ENTRY_REDIRECT_TO]
             # Handle "normal" entries
             else:
-                title, pid, text, links = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), \
-                                          entry[ENTRY_TEXT], entry[ENTRY_LINKS]
+                title, pid, text, links, categories = entry[ENTRY_TITLE], int(entry[ENTRY_PID]), \
+                                                      entry[ENTRY_TEXT], entry[ENTRY_LINKS], entry[ENTRY_CATEGORIES]
                 if title in self:
                     raise ValueError(f"More than 1 entry with title: '{title}'")
-                self[title] = GraphNode(title, pid, text, links)
+                self[title] = GraphNode(title, pid, text, links, categories)
 
     def get_node(self, title):
         """

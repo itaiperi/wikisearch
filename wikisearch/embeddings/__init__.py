@@ -1,4 +1,5 @@
 from .embedding import Embedding
+from .categories_multihot import CategoriesMultiHot
 from .doc2vec import Doc2Vec
 from .word2vec import Word2Vec
 from .word2vec_title import Word2VecTitle
