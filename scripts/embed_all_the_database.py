@@ -2,15 +2,22 @@ import argparse
 import datetime
 import time
 
+import torch
+
 from scripts.loaders import load_embedder_by_name
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_TITLE, ENTRY_ID
+from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
 def get_page_embedding(embedder, page_pr):
     embedded_vector = embedder._embed(page_pr)
+
+    if len(embedded_vector.size()) == 0:
+        embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
+
     return (embedder.__class__.__name__.lower(), embedder._encode_vector(embedded_vector))
 
 
