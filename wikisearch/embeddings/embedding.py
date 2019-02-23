@@ -63,14 +63,14 @@ class Embedding(metaclass=ABCMeta):
         """
         vector = self._load_embedding(title)
         if vector is not None:
-            return vector.to(self._device)
+            return vector
 
         page = self._mongo_handler_pages.get_page(title)
         embedded_vector = self._embed(page)
 
         # TODO: remove once the wtf-wikipedia parse lists correctly
         if len(embedded_vector.size()) == 0:
-            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE).to(self._device)
+            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE)
 
         self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)

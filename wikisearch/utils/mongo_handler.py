@@ -1,6 +1,6 @@
 import re
 
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 
 from wikisearch.consts.mongo import ENTRY_TITLE
 
@@ -47,3 +47,12 @@ class MongoHandler:
 
     def insert_data(self, data):
         self._collection.insert_many(data)
+
+    @staticmethod
+    def update_page_request(page):
+        filter_title = {'title': page[ENTRY_TITLE]}
+        updated_value = {"$set": page}
+        return UpdateOne(filter_title, updated_value, upsert=True)
+
+    def bulk_write(self, requests):
+        self._collection.bulk_write(requests)
