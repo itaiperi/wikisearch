@@ -1,7 +1,7 @@
 import torch
 
 from wikisearch.consts.mongo import WIKI_LANG, CATEGORIES
-from wikisearch.embeddings import Embedding
+from wikisearch.embeddings.embedding import Embedding
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -24,7 +24,7 @@ class CategoriesMultiHot(Embedding):
         }
 
     def _embed(self, page):
-        vector = torch.zeros(len(self._categories_map), dtype=torch.long)
+        vector = torch.zeros(len(self._categories_map), dtype=torch.float)
         page_categories_indices = [self._categories_map[category] for category in page[CATEGORIES]]
         vector.scatter_(0, torch.Tensor(page_categories_indices).long(), 1)
         return vector

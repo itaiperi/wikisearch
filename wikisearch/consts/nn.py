@@ -5,11 +5,11 @@ _categories_mongo = MongoHandler(WIKI_LANG, CATEGORIES)
 categories_multihot_size = len(_categories_mongo.get_page(CATEGORIES)[CATEGORIES])
 
 EMBEDDING_VECTOR_SIZE = {
-    "FastTextTitle": 300,
-    "FastTextTextAverage": 300,
-    "Word2VecTitle": 300,
-    "Word2VecTextAverage": 300,
-    "CategoriesMultiHot": categories_multihot_size,
-    "FastTextTitleCategoriesMultiHot": 300 + categories_multihot_size,
-    "Word2VecTitleCategoriesMultiHot": 300 + categories_multihot_size,
+    "FastTextTitle": {'embed_dim': 300},
+    "FastTextTextAverage": {'embed_dim': 300},
+    "Word2VecTitle": {'embed_dim': 300},
+    "Word2VecTextAverage": {'embed_dim': 300},
+    "CategoriesMultiHot": {'categories_dim': categories_multihot_size},
+    "FastTextTitleCategoriesMultiHot": {'embed_dim': 300, 'categories_dim': categories_multihot_size},
+    "Word2VecTitleCategoriesMultiHot": {'embed_dim': 300, 'categories_dim': categories_multihot_size},
 }

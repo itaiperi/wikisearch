@@ -4,16 +4,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
+
 NN_ARCHS = [
     "EmbeddingsDistance1",
     "EmbeddingsDistance2",
+    "EmbeddingsDistanceCategoriesMultiHot"
 ]
 
 
 class EmbeddingsDistance(nn.Module, metaclass=ABCMeta):
-    def __init__(self, embed_dim):
+    def __init__(self, dims):
         super(EmbeddingsDistance, self).__init__()
-        self._embed_dim = embed_dim
+        self._embed_dim = dims['embed_dim']
 
     def get_metadata(self):
         """
@@ -25,14 +28,14 @@ class EmbeddingsDistance(nn.Module, metaclass=ABCMeta):
         return {
             'arch_type': self.__class__.__name__,
             'architecture': [k + ": " + repr(v) for k, v in self._modules.items()],
-            'embed_dim': self._embed_dim,
+            'dims': {'embed_dim': self._embed_dim},
         }
 
 
 # TODO: Add documentation
 class EmbeddingsDistance1(EmbeddingsDistance):
-    def __init__(self, embed_dim):
-        super(EmbeddingsDistance1, self).__init__(embed_dim)
+    def __init__(self, dims):
+        super(EmbeddingsDistance1, self).__init__(dims)
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
         self.siamese_fc1 = nn.Linear(self._embed_dim, siamese_fc1_size)
@@ -65,11 +68,11 @@ class EmbeddingsDistance2(EmbeddingsDistance):
     """
     Like EmbeddingsDistance1, but with batch normalization after each convolution, for regularization
     """
-    def __init__(self, embed_dim):
-        super(EmbeddingsDistance2, self).__init__(embed_dim)
+    def __init__(self, dims):
+        super(EmbeddingsDistance2, self).__init__(dims)
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
-        self.siamese_fc1 = nn.Linear(embed_dim, siamese_fc1_size)
+        self.siamese_fc1 = nn.Linear(self._embed_dim, siamese_fc1_size)
         self.siamese_conv1 = nn.Conv1d(1, 32, kernel_size=5)
         self.siamese_batchnorm1 = nn.BatchNorm1d(32)
         self.siamese_conv2 = nn.Conv1d(32, 16, kernel_size=3)
@@ -100,19 +103,19 @@ class EmbeddingsDistance2(EmbeddingsDistance):
         return x
 
 
-class EmbeddingsDistanceMultiHotCategories(EmbeddingsDistance):
+class EmbeddingsDistanceCategoriesMultiHot(EmbeddingsDistance):
     """
     Like EmbeddingsDistance2, but with categories as inputs as well.
     """
-    def __init__(self, embed_dim, categories_dim):
-        super(EmbeddingsDistanceMultiHotCategories, self).__init__(embed_dim + categories_dim)
-        self._categories_dim = categories_dim
+    def __init__(self, dims):
+        super(EmbeddingsDistanceCategoriesMultiHot, self).__init__(dims)
+        self._categories_dim = dims['categories_dim']
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
         siamese_categories_fc1_size = 512
         siamese_categories_fc2_size = 128
-        self.siamese_fc1 = nn.Linear(embed_dim, siamese_fc1_size)
-        self.siamese_categories_fc1 = nn.Linear(categories_dim, siamese_categories_fc1_size)
+        self.siamese_fc1 = nn.Linear(self._embed_dim, siamese_fc1_size)
+        self.siamese_categories_fc1 = nn.Linear(self._categories_dim, siamese_categories_fc1_size)
         self.siamese_categories_fc2 = nn.Linear(siamese_categories_fc1_size, siamese_categories_fc2_size)
         self.siamese_conv1 = nn.Conv1d(1, 32, kernel_size=5)
         self.siamese_batchnorm1 = nn.BatchNorm1d(32)
@@ -131,8 +134,8 @@ class EmbeddingsDistanceMultiHotCategories(EmbeddingsDistance):
     def forward(self, x1, x2):
         x1 = x1.unsqueeze(1)
         x2 = x2.unsqueeze(1)
-        x1_embed, x1_categories = x1.split([self._embed_dim, self._categories_dim])
-        x2_embed, x2_categories = x2.split([self._embed_dim, self._categories_dim])
+        x1_embed, x1_categories = x1.split([self._embed_dim, self._categories_dim], dim=2)
+        x2_embed, x2_categories = x2.split([self._embed_dim, self._categories_dim], dim=2)
         x1_embed, x2_embed = self.siamese_fc1(x1_embed), self.siamese_fc1(x2_embed)
         x1_categories = self.siamese_categories_fc2(F.relu(self.siamese_categories_fc1(x1_categories)))
         x2_categories = self.siamese_categories_fc2(F.relu(self.siamese_categories_fc1(x2_categories)))
@@ -148,3 +151,7 @@ class EmbeddingsDistanceMultiHotCategories(EmbeddingsDistance):
         x = self.fc1(x).squeeze(2)
 
         return x
+
+    def get_metadata(self):
+        metadata = super(EmbeddingsDistanceCategoriesMultiHot, self).get_metadata()
+        metadata['dims']['categories_dim'] = EMBEDDING_VECTOR_SIZE["CategoriesMultiHot"]

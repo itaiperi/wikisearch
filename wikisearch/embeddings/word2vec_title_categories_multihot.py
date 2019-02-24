@@ -1,6 +1,5 @@
 import torch
 
-from wikisearch.consts.mongo import ENTRY_TITLE
 from wikisearch.embeddings import Word2VecTitle, CategoriesMultiHot
 
 
