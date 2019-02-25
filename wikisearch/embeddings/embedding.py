@@ -70,7 +70,7 @@ class Embedding(metaclass=ABCMeta):
 
         # TODO: remove once the wtf-wikipedia parse lists correctly
         if len(embedded_vector.size()) == 0:
-            embedded_vector = torch.zeros(EMBEDDING_VECTOR_SIZE[self.type], dtype=torch.float)
+            embedded_vector = torch.zeros(sum(EMBEDDING_VECTOR_SIZE[self.type].values()), dtype=torch.float)
 
         self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)
