@@ -1,6 +1,77 @@
 import time
 from collections import OrderedDict
 
+from sortedcontainers import SortedList
+
+
+class AstarSetElement(object):
+    def __init__(self, state, f, g):
+        self._state = state
+        self._f = f
+        self._g = g
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def f(self):
+        return self._f
+
+    @property
+    def g(self):
+        return self._g
+
+    @f.setter
+    def f(self, f):
+        self._f = f
+
+    @g.setter
+    def g(self, g):
+        self._g = g
+
+    def __eq__(self, other):
+        return self.f == other.f and self.g == other.g and self.state == other.state
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return self.f > other.f
+
+    def __ge__(self, other):
+        return self == other or self > other
+
+
+class AstarSet(object):
+    def __init__(self):
+        self._sorted_list = SortedList()
+        self._dict = dict()
+
+    def __delitem__(self, state):
+        element = self._dict.pop(state)
+        self._sorted_list.remove(element)
+
+    def __getitem__(self, state):
+        return self._dict[state]
+
+    def __setitem__(self, state, f_g_tuple):
+        element = AstarSetElement(state, f=f_g_tuple[0], g=f_g_tuple[1])
+        old_element = self._dict.pop(state, None)
+        if old_element:
+            self._sorted_list.remove(element)
+        self._dict[state] = element
+        self._sorted_list.add(element)
+
+    def __contains__(self, state):
+        return state in self._dict
+
+    def get_min_f(self):
+        return self._sorted_list[0]
+
 
 class Astar:
     """
@@ -25,37 +96,40 @@ class Astar:
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(destination_title)
 
-        closed_set = OrderedDict()
-        parents = OrderedDict()
-        open_set = OrderedDict([(source_state, {'f_score': self._heuristic.calculate(source_state, dest_state), 'g_score': 0})])
+        parents = dict()
+        closed_set = AstarSet()
+        open_set = AstarSet()
+        open_set[source_state] = (self._heuristic.calculate(source_state, dest_state), 0)
 
         developed = 0
         start_time = time.time()
 
         while open_set and ((time_limit is None) or (time.time() - start_time < time_limit)):
-            next_state, g_score = self._strategy.get_next_state(open_set)
-            closed_set[next_state] = g_score
+            next_state_element = self._strategy.get_next_state(open_set)
+            next_state, next_g = next_state_element.state, next_state_element.g
+            # f value doesn't matter in closed_set
+            closed_set[next_state] = (0, next_g)
             del open_set[next_state]
 
             if next_state == dest_state:
-                return self._reconstruct_path(parents, next_state), closed_set[next_state], developed
+                return self._reconstruct_path(parents, next_state), closed_set[next_state].g, developed
 
             developed += 1
             for succ_state in self._graph.get_node_neighbors(next_state):
-                new_g = closed_set[next_state] + self._cost.calculate(next_state, succ_state)
+                new_g = closed_set[next_state].g + self._cost.calculate(next_state, succ_state)
                 if succ_state in open_set:
-                    if new_g < open_set[succ_state]['g_score']:
+                    if new_g < open_set[succ_state].g:
                         parents[succ_state] = next_state
-                        open_set[succ_state] = {'f_score': new_g + self._heuristic.calculate(succ_state, dest_state), 'g_score': new_g}
+                        open_set[succ_state] = (new_g + self._heuristic.calculate(succ_state, dest_state), new_g)
                 else:
                     if succ_state in closed_set:
-                        if new_g < closed_set[succ_state]:
+                        if new_g < closed_set[succ_state].g:
                             parents[succ_state] = next_state
-                            closed_set.pop(succ_state)
-                            open_set[succ_state] = {'f_score': new_g + self._heuristic.calculate(succ_state, dest_state), 'g_score': new_g}
+                            del closed_set[succ_state]
+                            open_set[succ_state] = (new_g + self._heuristic.calculate(succ_state, dest_state), new_g)
                     else:
                         parents[succ_state] = next_state
-                        open_set[succ_state] = {'f_score': new_g + self._heuristic.calculate(succ_state, dest_state), 'g_score': new_g}
+                        open_set[succ_state] = (new_g + self._heuristic.calculate(succ_state, dest_state), new_g)
 
         # Reach here if there's no path between source and destination
         return None, -1, developed

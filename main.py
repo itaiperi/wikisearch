@@ -14,9 +14,9 @@ if __name__ == '__main__':
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--source', required=True, help="Source title")
-    parser.add_argument('-d', '--dest', required=True, help="Destination title")
-    parser.add_argument('-t', '--time_limit', type=float, default=60,
+    parser.add_argument(dest='source', help="Source title")
+    parser.add_argument(dest='dest', help="Destination title")
+    parser.add_argument('-t', '--time_limit', type=float,
                         help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
 
@@ -30,9 +30,8 @@ if __name__ == '__main__':
     path, distance, developed = \
         astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
     if path:
-        print("Path: ", end="")
-        print(*[node.title for node in path], sep=" -> ")
-        print("Distance: ", distance)
+        print(f"Path: {' -> '.join([node.title for node in path])}")
+        print(f"Distance: {distance}")
     else:
         print(f"Path not found.")
-    print(f"-TIME- Number of nodes developed: {developed}\nTime taken: {time.time() - start:.1f}s")
+    print(f"-TIME- Number of nodes developed: {developed} Time taken: {time.time() - start:.1f}s")
