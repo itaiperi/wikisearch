@@ -67,6 +67,9 @@ class AstarSet(object):
     def get_min_f(self):
         return self._sorted_list[0]
 
+    def __len__(self):
+        return len(self._sorted_list)
+
 
 class Astar:
     """
@@ -99,7 +102,7 @@ class Astar:
         developed = 0
         start_time = time.time()
 
-        while open_set and ((time_limit is None) or (time.time() - start_time < time_limit)):
+        while len(open_set) and ((time_limit is None) or (time.time() - start_time < time_limit)):
             next_state_element = self._strategy.get_next_state(open_set)
             next_state, next_g = next_state_element.state, next_state_element.g
             # f value doesn't matter in closed_set
