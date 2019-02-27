@@ -1,3 +1,5 @@
+import time
+
 from wikisearch.consts.mongo import *
 from wikisearch.graph_node import GraphNode
 from wikisearch.utils.mongo_handler import MongoHandler
@@ -10,6 +12,7 @@ class WikiGraph(dict):
 
     def __init__(self):
         super(WikiGraph, self).__init__()
+        start = time.time()
         self._mongo_handler = MongoHandler(WIKI_LANG, PAGES)
         self._redirects = {}
 
@@ -24,6 +27,7 @@ class WikiGraph(dict):
                 if title in self:
                     raise ValueError(f"More than 1 entry with title: '{title}'")
                 self[title] = GraphNode(title, pid, text, links, categories)
+        print(f"-TIME- Took {time.time() - start:.2f}s to load WikiGraph")
 
     def get_node(self, title):
         """

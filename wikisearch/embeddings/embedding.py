@@ -1,5 +1,6 @@
 import datetime
 import pickle
+import time
 from abc import ABCMeta, abstractmethod
 
 import torch
@@ -15,12 +16,14 @@ class Embedding(metaclass=ABCMeta):
     """
 
     def __init__(self):
+        start = time.time()
         self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
         self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self.type = self.__class__.__name__
         self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self.type.lower()])
                                    for doc in self._mongo_handler_embeddings.get_all_documents() if self.type.lower() in doc}
+        print(f"-TIME- Took {time.time() - start:2f}s to load {self.__class__.__name__} embedder")
 
     def _load_embedding(self, title):
         """
