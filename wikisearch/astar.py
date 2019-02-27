@@ -1,5 +1,4 @@
 import time
-from collections import OrderedDict
 
 from sortedcontainers import SortedList
 
@@ -22,28 +21,20 @@ class AstarSetElement(object):
     def g(self):
         return self._g
 
-    @f.setter
-    def f(self, f):
-        self._f = f
-
-    @g.setter
-    def g(self, g):
-        self._g = g
-
     def __eq__(self, other):
         return self.f == other.f and self.g == other.g and self.state == other.state
 
     def __lt__(self, other):
-        return self.f < other.f
+        return self.f < other.f and self.g < other.g and self.state.title < other.state.title
 
     def __le__(self, other):
         return self == other or self < other
 
     def __gt__(self, other):
-        return self.f > other.f
+        return not self <= other
 
     def __ge__(self, other):
-        return self == other or self > other
+        return not self < other
 
 
 class AstarSet(object):
@@ -62,7 +53,11 @@ class AstarSet(object):
         element = AstarSetElement(state, f=f_g_tuple[0], g=f_g_tuple[1])
         old_element = self._dict.pop(state, None)
         if old_element:
-            self._sorted_list.remove(element)
+            print(old_element.state.title, old_element.f, old_element.g, old_element in self._sorted_list)
+            for ele in self._sorted_list:
+                if ele == old_element:
+                    print(ele, old_element)
+            self._sorted_list.remove(old_element)
         self._dict[state] = element
         self._sorted_list.add(element)
 

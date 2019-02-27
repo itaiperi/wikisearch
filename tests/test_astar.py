@@ -25,7 +25,8 @@ def test_astar_time():
     graph = WikiGraph()
     astar = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
 
-    astar.run("Joe Biden", "Gulf War")
+    path, distance, developed = astar.run("Joe Biden", "Gulf War")
+    print(f"Path: {astar.stringify_path(path)}, Distance: {distance}, # Developed: {developed}")
 
 
 if __name__ == "__main__":
