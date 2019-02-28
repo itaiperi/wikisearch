@@ -1,5 +1,6 @@
 import argparse
 import cProfile
+import io
 import pstats
 
 from scripts.loaders import load_embedder_from_model_path
@@ -23,13 +24,22 @@ def test_astar_time():
     cost = UniformCost()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
+    pr = cProfile.Profile()
+    pr.enable()
     astar = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
-
     path, distance, developed = astar.run("Joe Biden", "Gulf War")
+    pr.disable()
     print(f"Path: {astar.stringify_path(path)}, Distance: {distance}, # Developed: {developed}")
+
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats('tottime')
+    ps.print_stats()
+    print(s.getvalue())
+
 
 
 if __name__ == "__main__":
-    cProfile.run('test_astar_time()', 'profiling_astar')
-    p = pstats.Stats('profiling_astar')
-    p.sort_stats('tottime').print_stats()
+    # cProfile.run('test_astar_time()', 'profiling_astar')
+    # p = pstats.Stats('profiling_astar')
+    # p.sort_stats('tottime').print_stats()
+    test_astar_time()

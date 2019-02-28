@@ -34,12 +34,14 @@ class Embedding(metaclass=ABCMeta):
         # Check if vector is cached in memory
         vector = self._cached_embeddings.get(title)
         if vector is not None:
-            return vector.to(self._device)
+            # Don't need to send to device, because _decode_vector already does it
+            return vector
         page = self._mongo_handler_embeddings.get_page(title)
         # TODO what happens if page is None? should this worry us? raise exception?
         if page:
             vector = page.get(self.__class__.__name__.lower())
             if vector is not None:
+                # Don't need to send to device, because _decode_vector already does it
                 decoded_vector = self._decode_vector(vector)
                 # Cache in memory, for next use
                 self._cached_embeddings[title] = decoded_vector

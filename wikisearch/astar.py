@@ -25,7 +25,7 @@ class AstarSetElement(object):
         return self.f == other.f and self.g == other.g and self.state == other.state
 
     def __lt__(self, other):
-        return self.f < other.f and self.g < other.g and self.state.title < other.state.title
+        return self.f < other.f or (self.f == other.f and self.state.title < other.state.title)
 
     def __le__(self, other):
         return self == other or self < other
@@ -53,10 +53,6 @@ class AstarSet(object):
         element = AstarSetElement(state, f=f_g_tuple[0], g=f_g_tuple[1])
         old_element = self._dict.pop(state, None)
         if old_element:
-            print(old_element.state.title, old_element.f, old_element.g, old_element in self._sorted_list)
-            for ele in self._sorted_list:
-                if ele == old_element:
-                    print(ele, old_element)
             self._sorted_list.remove(old_element)
         self._dict[state] = element
         self._sorted_list.add(element)
