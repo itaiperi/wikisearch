@@ -6,5 +6,5 @@ class BFSHeuristic(Heuristic):
     The BFS heuristic class
     """
 
-    def calculate(self, curr_state, dest_state):
+    def _calculate(self, curr_state, dest_state):
         return 0
