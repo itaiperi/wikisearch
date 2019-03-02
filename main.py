@@ -23,10 +23,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     cost = UniformCost()
-    # heuristic = BFSHeuristic()
-    model = load_model_from_path('data/distance_datasets/600613_30000_3000_3000/fasttexttitle_embeddingsdistance2_asymmetricmseloss_sgd_0.001_256_1_3/model.pth')
-    embedder = load_embedder_from_model_path('data/distance_datasets/600613_30000_3000_3000/fasttexttitle_embeddingsdistance2_asymmetricmseloss_sgd_0.001_256_1_3/model.pth')
-    heuristic = NNHeuristic(model, embedder)
+    heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
     astar = Astar(cost, heuristic, strategy, graph)
