@@ -9,7 +9,7 @@ from wikisearch.strategies import DefaultAstarStrategy
 
 class TestWikiGraphSearch(unittest.TestCase):
     def setUp(self):
-        self.cost = UniformCost()
+        self.cost = UniformCost(1)
         self.heuristic = BFSHeuristic()
         self.strategy = DefaultAstarStrategy()
         self.graph = WikiGraph()

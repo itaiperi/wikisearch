@@ -59,7 +59,7 @@ if __name__ == "__main__":
     statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE,
                                           BFS_DIST, BFS_TIME, BFS_DEVELOPED, BFS_PATH,
                                           NN_DIST, NN_TIME, NN_DEVELOPED, NN_PATH])
-    cost = UniformCost()
+    cost = UniformCost(1)
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
     astar_bfs = Astar(cost, BFSHeuristic(), strategy, graph)

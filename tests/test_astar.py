@@ -21,7 +21,7 @@ def test_astar_time():
     embedder = load_embedder_from_model_path(args.model)
     model = load_model_from_path(args.model)
 
-    cost = UniformCost()
+    cost = UniformCost(1)
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
     astar = Astar(cost, NNHeuristic(model, embedder), strategy, graph)

@@ -50,7 +50,7 @@ if __name__ == "__main__":
     pd.set_option('display.max_columns', 10)
     pd.set_option('precision', 2)
     statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST])
-    cost = UniformCost()
+    cost = UniformCost(1)
     heuristic = NNHeuristic(model, embedder)
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()

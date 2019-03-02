@@ -5,6 +5,9 @@ class UniformCost(Cost):
     """
     Represents the uniform cost. The distance from the current state to each of its successors is equal
     """
+    def __init__(self, cost):
+        super(UniformCost, self).__init__()
+        self.cost = cost
 
-    def calculate(self, curr_state, next_state):
-        return 1
+    def _calculate(self, curr_state, next_state):
+        return self.cost

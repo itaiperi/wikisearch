@@ -20,7 +20,7 @@ if __name__ == '__main__':
                         help="Time limit (seconds) for source-dest distance calculation")
     args = parser.parse_args()
 
-    cost = UniformCost()
+    cost = UniformCost(1)
     heuristic = BFSHeuristic()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
