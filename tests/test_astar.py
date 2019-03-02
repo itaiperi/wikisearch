@@ -24,9 +24,9 @@ def test_astar_time():
     cost = UniformCost()
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
+    astar = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
     pr = cProfile.Profile()
     pr.enable()
-    astar = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
     path, distance, developed = astar.run("Joe Biden", "Gulf War")
     pr.disable()
     print(f"Path: {astar.stringify_path(path)}, Distance: {distance}, # Developed: {developed}")
@@ -37,9 +37,5 @@ def test_astar_time():
     print(s.getvalue())
 
 
-
 if __name__ == "__main__":
-    # cProfile.run('test_astar_time()', 'profiling_astar')
-    # p = pstats.Stats('profiling_astar')
-    # p.sort_stats('tottime').print_stats()
     test_astar_time()
