@@ -36,7 +36,10 @@ def find_at_distance(graph, source_node, desired_distance):
     current_distance_nodes = {source_node}
     all_nodes = set(current_distance_nodes)
     nodes_at_distances = []
+    developed_at_distances = []
+    times_at_distances = []
 
+    start = time.time()
     while actual_distance < desired_distance:
         # If neighbor has been found before, then there's a shorter path, and we don't add it to current
         # distance
@@ -47,7 +50,9 @@ def find_at_distance(graph, source_node, desired_distance):
         next_distance_nodes = set(next_distance_nodes)
         next_distance_nodes = next_distance_nodes - all_nodes
         nodes_at_distances.append(next_distance_nodes)
+        developed_at_distances.append(nodes_developed)
         all_nodes.update(next_distance_nodes)
+        times_at_distances.append(time.time() - start)
         if next_distance_nodes:
             actual_distance += 1
             current_distance_nodes = next_distance_nodes
@@ -56,8 +61,9 @@ def find_at_distance(graph, source_node, desired_distance):
             break
 
     actual_distance = desired_distance if actual_distance == desired_distance else rnd_generator.randint(1, actual_distance)
+    index = actual_distance - 1
     # Return a random neighbor at actual_distance (which may also be desired distance) away from source page
-    return rnd_generator.choice(list(nodes_at_distances[actual_distance - 1])), actual_distance, nodes_developed
+    return rnd_generator.choice(list(nodes_at_distances[index])), actual_distance, developed_at_distances[index], times_at_distances[index]
 
 
 if __name__ == '__main__':
@@ -96,7 +102,7 @@ if __name__ == '__main__':
             distance, runtime, developed = 0, 0, 0
             while dest is None:  # This is to make sure that the source node actually has neighbors in the first place
                 source = rnd_generator.choice(graph_keys)
-                dest, distance, developed, runtime = timing(find_at_distance, graph, graph.get_node(source), desired_distance)
+                dest, distance, developed, runtime = find_at_distance(graph, graph.get_node(source), desired_distance)
             distances[dataset_type].append(distance)
             dataset.append((source, dest.title, distance))
             runtimes_per_distance[distance].append(runtime)
