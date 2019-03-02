@@ -1,8 +1,11 @@
 import argparse
+import os
 import time
+from collections import Counter
 from os import path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import tabulate
 import torch.utils.data
@@ -81,6 +84,23 @@ if __name__ == "__main__":
     distance_type_2 = NN_DIST
     first_distances = statistics[distance_type_1]
     second_distances = statistics[distance_type_2]
+
+    # Generate distances histogram
+    plt.figure(figsize=(16, 9))
+    plt.title(f"Distances {distance_type_1} vs. {distance_type_2}")
+    plt.xlabel("Distances")
+    plt.ylabel("# Occurences")
+    width = 0.3
+    first_distances_ticks = np.arange(min(first_distances), max(first_distances) + 1)
+    first_distances_counter = Counter(first_distances)
+    plt.bar(first_distances_ticks - width / 2,
+            [first_distances_counter[distance] for distance in first_distances_ticks], width=width, align='center')
+    second_distances_ticks = np.arange(min(second_distances), max(second_distances) + 1)
+    second_distances_counter = Counter(second_distances)
+    plt.bar(second_distances_ticks + width / 2,
+            [second_distances_counter[distance] for distance in second_distances_ticks], width=width, align='center')
+    plt.legend([distance_type_1, distance_type_2])
+    plt.savefig(path.join(os.path.join(output_dir, f"{distance_type_1}_{distance_type_2}_distances_histogram.jpg")))
 
     # Generate differences histogram
     differences = first_distances - second_distances
