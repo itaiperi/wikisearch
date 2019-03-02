@@ -18,7 +18,7 @@ from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
-from wikisearch.heuristics.nn_archs import EmbeddingsDistance1, NN_ARCHS
+from wikisearch.heuristics.nn_archs import NN_ARCHS
 
 CRITERION_OPTIONS = ["MSELoss", "AsymmetricMSELoss"]
 OPTIMIZER_OPTIONS = ["SGD", "Adam"]

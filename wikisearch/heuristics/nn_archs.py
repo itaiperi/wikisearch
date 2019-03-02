@@ -4,18 +4,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
-
 NN_ARCHS = [
-    "EmbeddingsDistance1",
-    "EmbeddingsDistance2",
+    "EmbeddingsDistanceNoBatchNorm",
+    "EmbeddingsDistance",
     "EmbeddingsDistanceCategoriesMultiHot"
 ]
 
 
-class EmbeddingsDistance(nn.Module, metaclass=ABCMeta):
+class EmbeddingsDistanceAbstract(nn.Module, metaclass=ABCMeta):
     def __init__(self, dims):
-        super(EmbeddingsDistance, self).__init__()
+        super(EmbeddingsDistanceAbstract, self).__init__()
+        self._dims = dims
         self._embed_dim = dims['embed_dim']
 
     def get_metadata(self):
@@ -28,14 +27,14 @@ class EmbeddingsDistance(nn.Module, metaclass=ABCMeta):
         return {
             'arch_type': self.__class__.__name__,
             'architecture': [k + ": " + repr(v) for k, v in self._modules.items()],
-            'dims': {'embed_dim': self._embed_dim},
+            'dims': self._dims,
         }
 
 
 # TODO: Add documentation
-class EmbeddingsDistance1(EmbeddingsDistance):
+class EmbeddingsDistanceNoBatchNorm(EmbeddingsDistanceAbstract):
     def __init__(self, dims):
-        super(EmbeddingsDistance1, self).__init__(dims)
+        super(EmbeddingsDistanceNoBatchNorm, self).__init__(dims)
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
         self.siamese_fc1 = nn.Linear(self._embed_dim, siamese_fc1_size)
@@ -64,12 +63,12 @@ class EmbeddingsDistance1(EmbeddingsDistance):
 
 
 # TODO add documentation
-class EmbeddingsDistance2(EmbeddingsDistance):
+class EmbeddingsDistance(EmbeddingsDistanceAbstract):
     """
     Like EmbeddingsDistance1, but with batch normalization after each convolution, for regularization
     """
     def __init__(self, dims):
-        super(EmbeddingsDistance2, self).__init__(dims)
+        super(EmbeddingsDistance, self).__init__(dims)
         # Architecture of Siamese Network fed into a Sequential one
         siamese_fc1_size = 128
         self.siamese_fc1 = nn.Linear(self._embed_dim, siamese_fc1_size)
@@ -103,7 +102,7 @@ class EmbeddingsDistance2(EmbeddingsDistance):
         return x
 
 
-class EmbeddingsDistanceCategoriesMultiHot(EmbeddingsDistance):
+class EmbeddingsDistanceCategoriesMultiHot(EmbeddingsDistanceAbstract):
     """
     Like EmbeddingsDistance2, but with categories as inputs as well.
     """
@@ -151,7 +150,3 @@ class EmbeddingsDistanceCategoriesMultiHot(EmbeddingsDistance):
         x = self.fc1(x).squeeze(2)
 
         return x
-
-    def get_metadata(self):
-        metadata = super(EmbeddingsDistanceCategoriesMultiHot, self).get_metadata()
-        metadata['dims']['categories_dim'] = EMBEDDING_VECTOR_SIZE["CategoriesMultiHot"]

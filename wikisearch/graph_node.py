@@ -9,6 +9,7 @@ class GraphNode:
         :param pid: pageID, string
         :param text: text of the entry, string
         :param links: list of strings, which are titles of neighbors
+        :param categories: list of strings, categories of the entry
         """
         self._title = title
         self._pid = pid

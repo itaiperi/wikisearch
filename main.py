@@ -1,12 +1,10 @@
 import argparse
 import time
 
-from scripts.loaders import load_embedder_from_model_path, load_model_from_path
 from wikisearch.astar import Astar
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
-from wikisearch.heuristics.nn_heuristic import NNHeuristic
 from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
 
