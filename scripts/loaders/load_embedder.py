@@ -16,9 +16,9 @@ def load_embedder_from_model_path(model_location_path):
     return load_embedder_by_name(embedding)
 
 
-def load_embedder_by_name(embedder_type):
+def load_embedder_by_name(embedder_type, save_to_db=True):
     embedding_module = import_module('.'.join(['wikisearch', 'embeddings', EMBEDDINGS_MODULES[embedder_type]]),
                                      package='wikisearch')
     embedding_class = getattr(embedding_module, embedder_type)
 
-    return embedding_class()
+    return embedding_class(save_to_db)

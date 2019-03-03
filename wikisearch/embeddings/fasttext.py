@@ -1,6 +1,5 @@
 import string
 import time
-from abc import ABC
 
 import gensim
 from nltk import word_tokenize
@@ -8,20 +7,19 @@ from nltk.corpus import stopwords
 
 from scripts.utils import Cache
 from wikisearch.consts.paths import PATH_TO_PRETRAINED_FASTTEXT_MODEL
-
 from wikisearch.embeddings.embedding import Embedding
 
 
-class FastText(Embedding, ABC):
+class FastText(Embedding):
     """
     The class representing the fasttext embedding and its derivatives
     """
 
-    def __init__(self):
+    def __init__(self, save_to_db=True):
         """
         Load the embedding pre-trained model
         """
-        super(FastText, self).__init__()
+        super(FastText, self).__init__(save_to_db)
         cache = Cache()
         start = time.time()
         self._model = cache['fasttext_model']

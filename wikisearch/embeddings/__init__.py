@@ -13,7 +13,7 @@ from .word2vec_title_categories_multihot import Word2VecTitleCategoriesMultiHot
 # AVAILABLE_EMBEDDINGS - names of classes
 AVAILABLE_EMBEDDINGS = \
     [cls.__name__ for cls in [Doc2Vec, Word2VecTitle, Word2VecTextAverage, FastTextTitle, FastTextTextAverage,
-                              FastTextTitleCategoriesMultiHot, Word2VecTitleCategoriesMultiHot]]
+                              CategoriesMultiHot, FastTextTitleCategoriesMultiHot, Word2VecTitleCategoriesMultiHot]]
 
 # EMBEDDINGS_MODULES - names of files in which the AVAILABLE_MODULES are at, respectively.
 EMBEDDINGS_MODULES = {
@@ -24,6 +24,7 @@ EMBEDDINGS_MODULES = {
     FastText.__name__: 'fasttext',
     FastTextTitle.__name__: 'fasttext_title',
     FastTextTextAverage.__name__: 'fasttext_text_average',
+    CategoriesMultiHot.__name__: 'categories_multihot',
     FastTextTitleCategoriesMultiHot.__name__: 'fasttext_title_categories_multihot',
     Word2VecTitleCategoriesMultiHot.__name__: 'word2vec_title_categories_multihot',
 }

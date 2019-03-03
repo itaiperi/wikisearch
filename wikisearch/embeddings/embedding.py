@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import torch
 
 from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES, ENTRY_TITLE
-from wikisearch.consts.nn import EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.embeddings import EMBEDDING_VECTOR_SIZE
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -15,12 +15,13 @@ class Embedding(metaclass=ABCMeta):
     Base class for representing an embedding type
     """
 
-    def __init__(self):
+    def __init__(self, save_to_db=True):
         start = time.time()
+        self.save_to_db = save_to_db
+        self.type = self.__class__.__name__
+        self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
         self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
-        self._device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.type = self.__class__.__name__
         self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self.type.lower()])
                                    for doc in self._mongo_handler_embeddings.get_all_documents() if self.type.lower() in doc}
         print(f"-TIME- Took {time.time() - start:2f}s to load {self.__class__.__name__} embedder")
@@ -73,11 +74,8 @@ class Embedding(metaclass=ABCMeta):
         page = self._mongo_handler_pages.get_page(title)
         embedded_vector = self._embed(page)
 
-        # TODO: remove once the wtf-wikipedia parse lists correctly
-        if len(embedded_vector.size()) == 0:
-            embedded_vector = torch.zeros(sum(EMBEDDING_VECTOR_SIZE[self.type].values()), dtype=torch.float)
-
-        self._store_embedding(page[ENTRY_ID], title, embedded_vector)
+        if self.save_to_db:
+            self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)
 
     @abstractmethod
@@ -115,3 +113,6 @@ class Embedding(metaclass=ABCMeta):
         :param page: The text after it was tokenized
         """
         raise NotImplementedError
+
+    def _zeros_if_empty_vector(self, vector):
+        return vector if len(vector.size()) else torch.zeros(sum(EMBEDDING_VECTOR_SIZE[self.type].values()), dtype=torch.float)

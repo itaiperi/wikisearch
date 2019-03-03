@@ -6,8 +6,8 @@ from wikisearch.utils.mongo_handler import MongoHandler
 
 
 class CategoriesMultiHot(Embedding):
-    def __init__(self):
-        super(CategoriesMultiHot, self).__init__()
+    def __init__(self, save_to_db=True):
+        super(CategoriesMultiHot, self).__init__(save_to_db)
         categories_mongo = MongoHandler(WIKI_LANG, CATEGORIES)
         categories = categories_mongo.get_page(CATEGORIES)[CATEGORIES]
         self._categories_map = {category: i for i, category in enumerate(categories)}

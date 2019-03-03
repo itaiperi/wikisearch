@@ -1,10 +1,8 @@
 import string
-from abc import ABC
-
-import gensim
-import corenlp
 import time
 
+import corenlp
+import gensim
 from nltk.corpus import stopwords
 
 from scripts.utils import Cache
@@ -13,16 +11,16 @@ from wikisearch.consts.pos_conversion import TREEBANK_TO_UNIVERSAL
 from wikisearch.embeddings import Embedding
 
 
-class Word2Vec(Embedding, ABC):
+class Word2Vec(Embedding):
     """
     The class representing the word2vec embedding and its derivatives
     """
 
-    def __init__(self):
+    def __init__(self, save_to_db=True):
         """
         Load the embedding pre-trained model
         """
-        super(Word2Vec, self).__init__()
+        super(Word2Vec, self).__init__(save_to_db)
         cache = Cache()
         start = time.time()
         self._model = cache['word2vec_model']

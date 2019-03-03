@@ -12,4 +12,4 @@ class FastTextTitle(FastText):
 
         torched_words_vectors = torch.Tensor(embedded_words)
 
-        return torch.mean(torched_words_vectors, 0)
+        return self._zeros_if_empty_vector(torch.mean(torched_words_vectors, 0))
