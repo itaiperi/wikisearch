@@ -37,29 +37,38 @@ def timing(func, *args, **kwargs):
 
 
 class Cache:
-    _should_cache = not os.environ.get('WIKISEARCH_CACHE') in [None, 'False']
+    _cache_to_disk = not os.environ.get('WIKISEARCH_CACHE') in [None, 'False']
     cache_path = os.environ.get('WIKISEARCH_CACHE_PATH')
-    if _should_cache and (cache_path is None or not os.path.exists(cache_path)):
+    cached_items = {}
+    if _cache_to_disk and (cache_path is None or not os.path.exists(cache_path)):
         raise ValueError(
             'Caching requested, but caching path is incorrect. Please define WIKISEARCH_CACHE env variable.')
     print(
-        f'-INFO- Internal caching mechanism '
-        f'{"used." if _should_cache else "not used. To use it, set WIKISEARCH_CACHE (bool) and WIKISEARCH_CACHE_PATH (str) env variables."}')
+        f'-INFO- Internal caching-to-disk mechanism '
+        f'{"used." if _cache_to_disk else "not used. To use it, set WIKISEARCH_CACHE (bool) and WIKISEARCH_CACHE_PATH (str) env variables."}')
 
     def __getitem__(self, key):
-        if not self._should_cache:
+        if key in self.cached_items:
+            return self.cached_items[key]
+
+        if not self._cache_to_disk:
             return None
+
         caller_path = os.path.splitext(os.path.abspath(inspect.stack()[1][1]).replace(':', '').replace(os.sep, '_'))[0]
         key_path = os.path.join(self.cache_path, f'{caller_path}-{str(key)}.pkl')
         if os.path.exists(key_path):
             with open(key_path, 'rb') as f:
-                return pickle.load(f)
+                cached_item = pickle.load(f)
+                self.cached_items[key] = cached_item
+                return cached_item
         else:
             return None
 
     def __setitem__(self, key, value):
-        if not self._should_cache:
-            return None
+        self.cached_items[key] = value
+        if not self._cache_to_disk:
+            return
+
         caller_path = os.path.splitext(os.path.abspath(inspect.stack()[1][1]).replace(':', '').replace(os.sep, '_'))[0]
         key_path = os.path.join(self.cache_path, f'{caller_path}-{str(key)}.pkl')
         with open(key_path, 'wb') as f:
