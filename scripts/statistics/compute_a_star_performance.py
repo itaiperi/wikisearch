@@ -59,6 +59,8 @@ if __name__ == "__main__":
     statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE,
                                           BFS_DIST, BFS_TIME, BFS_DEVELOPED, BFS_PATH,
                                           NN_DIST, NN_TIME, NN_DEVELOPED, NN_PATH])
+    statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
+
     cost = UniformCost(1)
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
@@ -69,6 +71,11 @@ if __name__ == "__main__":
     bfs_distance_developed = defaultdict(list)
     nn_distance_times = defaultdict(list)
     nn_distance_developed = defaultdict(list)
+
+    # Parameters to save the result to a file
+    model_dir_path = path.dirname(args.model)
+    model_file_name = path.splitext(path.basename(args.model))[0]
+    statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
@@ -95,19 +102,14 @@ if __name__ == "__main__":
                     NN_DEVELOPED: nn_developed,
                     NN_PATH: print_path(nn_path)
                 }, ignore_index=True)
+            # Print out the statistics as tabulate
+            statistics_df_tabulate = \
+                tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid',
+                                  floatfmt='.5f')
+            print(statistics_df_tabulate)
+            with open(statistics_file_path, 'w', encoding='utf8') as f:
+                f.write(statistics_df_tabulate)
             print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'A*', length=50)
-
-    # Print out the statistics as tabulate
-    model_dir_path = path.dirname(args.model)
-    model_file_name = path.splitext(path.basename(args.model))[0]
-
-    statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
-    statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
-    statistics_df_tabulate = \
-        tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid', floatfmt='.5f')
-    print(statistics_df_tabulate)
-    with open(statistics_file_path, 'w', encoding='utf8') as f:
-        f.write(statistics_df_tabulate)
 
     # Creates the distance-time statistics
     width = 0.3
