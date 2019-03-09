@@ -17,17 +17,17 @@ class MongoHandler:
         self._collection = self._mongo_client[database][collection]
 
     def get_all_documents(self, projection=None):
-        return self._collection.find(projection=projection)
+        return self.get_pages({}, projection=projection)
+
+    def get_pages(self, filter, projection=None):
+        return self._collection.find(filter, projection=projection)
 
     def get_page(self, title, projection=None):
         return self._collection.find_one({'title': title}, projection=projection)
 
     def get_page_by_regex(self, title_regex, projection=None):
         regex = re.compile(title_regex)
-        return self._collection.find_one({'title': regex}, projection=projection)
-
-    def project_page_by_field(self, field_name):
-        return self._collection.find({}, {field_name: True})
+        return self.get_page({'title': regex}, projection=projection)
 
     def update_page(self, page):
         """
@@ -43,7 +43,10 @@ class MongoHandler:
         return self._collection.count_documents({}) == 0
 
     def delete_collection_data(self):
-        self._collection.delete_many({})
+        self.delete_pages({})
+
+    def delete_pages(self, filter):
+        self._collection.delete_many(filter)
 
     def insert_data(self, data):
         self._collection.insert_many(data)

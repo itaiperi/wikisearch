@@ -19,15 +19,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--embeddings", required=True, choices=AVAILABLE_EMBEDDINGS, nargs="+")
     parser.add_argument("-b", "--batch", default=1000, type=int)
+    parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
 
     mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
     mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
-    mongo_handler_embeddings.delete_collection_data()
-    embedders = [load_embedder_by_name(embedder, save_to_db=False) for embedder in args.embeddings]
+    if args.overwrite:
+        mongo_handler_embeddings.delete_collection_data()
 
-    pages = mongo_handler_pages.get_all_documents().batch_size(100)
+    embedded_pages_query = {"$and": [{embedder.lower(): {"$exists": True}} for embedder in args.embeddings]}
+    embedded_titles = [page[ENTRY_TITLE] for page in mongo_handler_embeddings.get_pages(embedded_pages_query, {"title": True})]
+    # Delete pages with partial embeddings
+    mongo_handler_embeddings.delete_pages({"title": {"$nin": embedded_titles}})
+
+    embedders = [load_embedder_by_name(embedder, save_to_db=False) for embedder in args.embeddings]
+    # Only embed pages which are not fully embedded yet
+    pages_without_embeddings_query = {"title": {"$nin": embedded_titles}}
+    pages = mongo_handler_pages.get_pages(pages_without_embeddings_query).batch_size(100)
     len_pages = pages.count()
+
     start = time.time()
     embedded_vectors = []
     for idx, page in enumerate(pages, 1):
