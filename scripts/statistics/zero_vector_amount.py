@@ -4,8 +4,8 @@ import os
 import torch
 
 from scripts.loaders import load_embedder_by_name
-from wikisearch.consts.mongo import ENTRY_TITLE
 from wikisearch.consts.embeddings import EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.mongo import ENTRY_TITLE
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 
 if __name__ == "__main__":

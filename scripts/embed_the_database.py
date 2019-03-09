@@ -21,11 +21,12 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--batch", default=1000, type=int)
     args = parser.parse_args()
 
-    embedders = [load_embedder_by_name(embedder, save_to_db=False) for embedder in args.embeddings]
     mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
     mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
+    mongo_handler_embeddings.delete_collection_data()
+    embedders = [load_embedder_by_name(embedder, save_to_db=False) for embedder in args.embeddings]
 
-    pages = mongo_handler_pages.get_all_documents()
+    pages = mongo_handler_pages.get_all_documents().batch_size(100)
     len_pages = pages.count()
     start = time.time()
     embedded_vectors = []

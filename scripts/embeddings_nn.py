@@ -15,8 +15,8 @@ from torch.nn import MSELoss
 from scripts.loaders import load_embedder_by_name
 from scripts.loaders.load_model import load_model_type
 from scripts.utils import print_progress_bar
-from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.embeddings import EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.heuristics.nn_archs import NN_ARCHS
 

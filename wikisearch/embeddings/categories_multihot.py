@@ -25,6 +25,7 @@ class CategoriesMultiHot(Embedding):
 
     def _embed(self, page):
         vector = torch.zeros(len(self._categories_map), dtype=torch.float)
-        page_categories_indices = [self._categories_map[category] for category in page[CATEGORIES]]
+        page_categories_indices = [self._categories_map[category] for category in page[CATEGORIES]
+                                   if category in self._categories_map]
         vector.scatter_(0, torch.Tensor(page_categories_indices).long(), 1)
         return vector

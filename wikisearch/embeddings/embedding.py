@@ -5,8 +5,8 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 
-from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES, ENTRY_TITLE
 from wikisearch.consts.embeddings import EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES, ENTRY_TITLE
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
