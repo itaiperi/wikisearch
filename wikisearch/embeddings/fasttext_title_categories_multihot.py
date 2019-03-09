@@ -19,6 +19,11 @@ class FastTextTitleCategoriesMultiHot(FastTextTitle):
                                                      self._categories_multihot_embedder.embed(title)), dim=0)
                                    for title in fasttext_embedder_titles & categories_embedder_titles}
 
+        # Clear caches of sub-embedders, to free up memory, because we've already got those cached entried
+        # concatenated in the current embedder
+        self._fasttext_title_embedder._cached_embeddings = {}
+        self._categories_multihot_embedder._cached_embeddings = {}
+
     def _embed(self, page):
         return torch.cat((self._fasttext_title_embedder.embed(page[ENTRY_TITLE]),
                           self._categories_multihot_embedder.embed(page[ENTRY_TITLE])), dim=0)
