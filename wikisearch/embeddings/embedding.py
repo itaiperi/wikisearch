@@ -37,7 +37,7 @@ class Embedding(metaclass=ABCMeta):
         if vector is not None:
             # Don't need to send to device, because _decode_vector already does it
             return vector
-        page = self._mongo_handler_embeddings.get_page(title)
+        page = self._mongo_handler_embeddings.get_page(title, {"title": True, self.__class__.__name__.lower(): True})
         # TODO what happens if page is None? should this worry us? raise exception?
         if page:
             vector = page.get(self.__class__.__name__.lower())
@@ -57,9 +57,10 @@ class Embedding(metaclass=ABCMeta):
         """
         if title not in self._cached_embeddings:
             self._cached_embeddings[title] = vector
-        page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): self._encode_vector(vector),
-                'last_modified': datetime.datetime.now().__str__()}
-        self._mongo_handler_embeddings.update_page(page)
+        if self.save_to_db:
+            page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): self._encode_vector(vector),
+                    'last_modified': datetime.datetime.now().__str__()}
+            self._mongo_handler_embeddings.update_page(page)
 
     def embed(self, title):
         """
@@ -74,8 +75,7 @@ class Embedding(metaclass=ABCMeta):
         page = self._mongo_handler_pages.get_page(title)
         embedded_vector = self._embed(page)
 
-        if self.save_to_db:
-            self._store_embedding(page[ENTRY_ID], title, embedded_vector)
+        self._store_embedding(page[ENTRY_ID], title, embedded_vector)
         return embedded_vector.to(self._device)
 
     @abstractmethod

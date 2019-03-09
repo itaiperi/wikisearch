@@ -10,7 +10,7 @@ from multiprocessing.pool import Pool
 import pandas as pd
 import tabulate
 
-from scripts.utils import print_progress_bar
+# from scripts.utils import print_progress_bar
 from wikisearch.heuristics.nn_archs import NN_ARCHS
 
 
@@ -66,9 +66,9 @@ def train_and_test_model(model_params):
     test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m {model_params['-o']} -df {model_params['-te']}"
     subprocess.call(train_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'train.log'), 'w'))
     subprocess.call(test_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'test.log'), 'w+'))
-    with model_count.get_lock():
-        model_count.value += 1
-        print_progress_bar(model_count, len(all_models_params), time.time() - start)
+    # with model_count.get_lock():
+    #     model_count.value += 1
+    #     print_progress_bar(model_count, len(all_models_params), time.time() - start)
 
 
 if __name__ == "__main__":
@@ -108,5 +108,9 @@ if __name__ == "__main__":
     # Only models that haven't been run before will have -o parameter
     all_models_params = [params for params in all_models_params if '-o' in params]
 
-    pool = Pool(min(args.num_workers, cpu_count() - 1))
-    pool.map(train_and_test_model, all_models_params)
+    if args.num_workers == 1:
+        for params in all_models_params:
+            train_and_test_model(params)
+    else:
+        pool = Pool(min(args.num_workers, cpu_count() - 1))
+        pool.map(train_and_test_model, all_models_params)
