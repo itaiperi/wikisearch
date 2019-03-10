@@ -64,7 +64,7 @@ def choose_categories(pages, percentage, resolution):
     return chosen_categories, coverage_percentages, len(taken_categories)
 
 
-def main(percentage, resolution):
+def main(percentage, resolution, save_path):
     pages_mongo = MongoHandler(WIKI_LANG, PAGES)
     categories_mongo = MongoHandler(WIKI_LANG, CATEGORIES)
 
@@ -79,7 +79,7 @@ def main(percentage, resolution):
     plt.title("Number of categories chosen to cover percentage of pages")
     plt.xlabel("# Categories")
     plt.ylabel("% of Pages Covered")
-    plt.savefig(os.path.join(sys.path[0], 'categories_coverage.jpg'))
+    plt.savefig(save_path)
     categories_mongo.update_page({ENTRY_TITLE: CATEGORIES, CATEGORIES: sorted(chosen_categories)})
 
 
@@ -87,8 +87,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--percentage', required=True, type=float, help="Percentage of pages to cover with categories")
     parser.add_argument('-r', '--resolution', default=1, type=int, help="Number of categories to add in each iteration")
+    parser.add_argument('-o', '--out', default=os.path.join(sys.path[0], 'categories_coverage.jpg'),
+                        help="Path to save file to (default: <script location>/categories_coverage.jpg)")
     args = parser.parse_args()
     if args.percentage > 1.0:
         raise ValueError(f"Percentage must be in range 0 <= p <= 1.0, got {args.percentage}")
 
-    main(args.percentage, args.resolution)
+    main(args.percentage, args.resolution, args.out)

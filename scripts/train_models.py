@@ -3,8 +3,7 @@ import itertools
 import os
 import subprocess
 import sys
-import time
-from multiprocessing import cpu_count, Value
+from multiprocessing import cpu_count
 from multiprocessing.pool import Pool
 
 import pandas as pd
@@ -55,20 +54,14 @@ adam = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_
 all_models_params = batch_sizes + nn_archs + embeddings + criterions + sgd + adam + categories
 # Drop duplicates
 all_models_params = [dict(t) for t in {tuple(d.items()) for d in all_models_params}]
-model_count = Value('i', 0)
-start = time.time()
 
 
 def train_and_test_model(model_params):
-    global model_count
     params_str = " ".join([" ".join([str(k), str(v)]) for k, v in model_params.items()])
     train_command = f"python {os.path.join(sys.path[0], 'embeddings_nn.py')} {params_str}"
     test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m {model_params['-o']} -df {model_params['-te']}"
     subprocess.call(train_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'train.log'), 'w'))
     subprocess.call(test_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'test.log'), 'w+'))
-    # with model_count.get_lock():
-    #     model_count.value += 1
-    #     print_progress_bar(model_count, len(all_models_params), time.time() - start)
 
 
 if __name__ == "__main__":
