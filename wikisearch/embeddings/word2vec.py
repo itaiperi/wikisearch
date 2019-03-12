@@ -41,7 +41,7 @@ class Word2Vec(Embedding):
         with corenlp.CoreNLPClient(start_server=False, timeout=10000, annotators="tokenize ssplit lemma pos".split()) as client:
             ann = client.annotate(text)
         # Filters out stop words
-        stop_words = set(stopwords.words('english'))
+        stop_words = set(stopwords.words('english')) | {word.capitalize() for word in stopwords.words('english')}
         # Removes punctuation from each word
         punctuation = set(string.punctuation) | {"\"\""} | {'\'\''} | {'``'}
         punctuation_and_stop_words = stop_words | punctuation

@@ -39,7 +39,7 @@ class FastText(Embedding):
         # Tokenize the text
         text = word_tokenize(text)
         # Removes stop words
-        stop_words = set(stopwords.words('english'))
+        stop_words = set(stopwords.words('english')) | {word.capitalize() for word in stopwords.words('english')}
         # Removes punctuation from each word
         punctuation = set(string.punctuation) | {"\"\""} | {'\'\''} | {'``'}
         punctuation_and_stop_words = stop_words | punctuation
