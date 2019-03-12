@@ -13,6 +13,10 @@ class Heuristic(metaclass=ABCMeta):
     def count(self):
         return self._count
 
+    @count.setter
+    def count(self, count):
+        self._count = count
+
     def calculate(self, curr_state, dest_state):
         self._count += 1
         return self._calculate(curr_state, dest_state)

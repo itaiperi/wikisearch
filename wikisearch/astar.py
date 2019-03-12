@@ -90,6 +90,8 @@ class Astar:
         source_state = self._graph.get_node(source_title)
         dest_state = self._graph.get_node(destination_title)
 
+        self._heuristic.count = 0
+
         parents = dict()
         closed_set = AstarSet()
         open_set = AstarSet()

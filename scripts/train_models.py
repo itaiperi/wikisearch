@@ -74,7 +74,7 @@ def train_and_test_model(model_params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(dest="dataset_dir", help="Directory where dataset train, val, test files are")
-    parser.add_argument('-o', '--out', help="Directory to which models will be written (Default: dataset directory")
+    parser.add_argument('-o', '--out', help="Directory to which models will be written (Default: dataset directory)")
     parser.add_argument("-w", "--num-workers", default=1, type=int)
     args = parser.parse_args()
     if args.out is None:

@@ -38,7 +38,6 @@ def calculate_averages(distances_times: dict, indent):
         average_values.append(average_time)
         std.append(distance_times.std())
 
-        plt.text(distance+indent, average_time, str(round(average_time, 5)))
     return np.array(distances), np.array(average_values), np.array(std)
 
 
@@ -57,8 +56,8 @@ if __name__ == "__main__":
 
     # Prepare the statistics table
     statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE,
-                                          BFS_DIST, BFS_TIME, BFS_DEVELOPED, BFS_PATH,
-                                          NN_DIST, NN_TIME, NN_DEVELOPED, NN_PATH])
+                                          BFS_DIST, BFS_TIME, BFS_DEVELOPED, BFS_H_DEVELOPED, BFS_PATH,
+                                          NN_DIST, NN_TIME, NN_DEVELOPED, NN_H_DEVELOPED, NN_PATH])
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
 
     cost = UniformCost(1)
@@ -96,17 +95,18 @@ if __name__ == "__main__":
                     BFS_DIST: bfs_dist,
                     BFS_TIME: bfs_time,
                     BFS_DEVELOPED: bfs_developed,
-                    BFS_PATH: print_path(bfs_path),
+                    BFS_H_DEVELOPED: astar_bfs._heuristic.count,
+                    BFS_PATH: print_path(bfs_path).replace("->", "\n->"),
                     NN_DIST: nn_dist,
                     NN_TIME: nn_time,
                     NN_DEVELOPED: nn_developed,
-                    NN_PATH: print_path(nn_path)
+                    NN_H_DEVELOPED: astar_nn._heuristic.count,
+                    NN_PATH: print_path(nn_path).replace("->", "\n->")
                 }, ignore_index=True)
             # Print out the statistics as tabulate
             statistics_df_tabulate = \
                 tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid',
                                   floatfmt='.5f')
-            print(statistics_df_tabulate)
             with open(statistics_file_path, 'w', encoding='utf8') as f:
                 f.write(statistics_df_tabulate)
             print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'A*', length=50)
