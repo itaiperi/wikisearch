@@ -42,7 +42,8 @@ def draw_bar(ax, indices, data, labels, title, xlabel, ylabel):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--out", default=sys.path[0], help="Path to save file to (default: script location)")
+    parser.add_argument("-o", "--out", default=sys.path[0], help="Path to save files to (default: script location)")
+    args = parser.parse_args()
 
     pages_handler = MongoHandler(WIKI_LANG, PAGES)
     all_pages = pages_handler.get_all_documents()
@@ -68,7 +69,9 @@ if __name__ == "__main__":
     total_words = sum(counter.values())
     total_words_no_repeats = len(counter_no_repeats)
 
-    bin_edges = [1, 10, 100, 500, 1000, 5000, 10000, max(counter_no_repeats.values())]
+    bin_edges_no_repeat = [1, 10, 100, 500, 1000, 5000, 10000, max(counter_no_repeats.values())]
+    bin_edges = [1, 10, 100, 500, 1000, 5000, 10000, max(counter.values())]
+    bin_labels_no_repeat = [f"{left}-{right}" for left, right in zip(bin_edges[:-1], bin_edges[1:])]
     bin_labels = [f"{left}-{right}" for left, right in zip(bin_edges[:-1], bin_edges[1:])]
     bin_indices = list(range(len(bin_edges) - 1))
 
@@ -81,8 +84,8 @@ if __name__ == "__main__":
     bin_to_words_no_repeat = defaultdict(dict)
     bin_to_words_no_repeat_count_with_repeat = defaultdict(dict)
     for k, v in counter_no_repeats.items():
-        bin = choose_bin(counter[k], bin_edges)
-        bin_no_repeats = choose_bin(v, bin_edges)
+        bin = choose_bin(counter[k], bin_edges_no_repeat)
+        bin_no_repeats = choose_bin(v, bin_edges_no_repeat)
         word_to_bin[k] = bin
         bin_to_words[bin][k] = counter[k]
         bin_to_words_no_repeat[bin_no_repeats][k] = v
@@ -95,25 +98,25 @@ if __name__ == "__main__":
 
     # Draw bar diagrams and pie charts
     ax = plt.subplot(2, 2, 1)
-    hist, _ = np.histogram(list(counter_no_repeats.values()), bins=bin_edges)
-    draw_bar(ax, bin_indices, hist, bin_labels, "Number of words appearing\nin # of documents",
+    hist, _ = np.histogram(list(counter_no_repeats.values()), bins=bin_edges_no_repeat)
+    draw_bar(ax, bin_indices, hist, bin_labels_no_repeat, "Number of words appearing\nin # of documents",
              "Number of documents a word appears in", "Number of words in bin")
 
     ax = plt.subplot(2, 2, 2)
     hist = [sum(bin_to_words_no_repeat_count_with_repeat[index].values()) for index in bin_indices]
-    draw_bar(ax, bin_indices, hist, bin_labels, "Volume (with repeats) of words\nappearing in # of documents",
+    draw_bar(ax, bin_indices, hist, bin_labels_no_repeat, "Volume (with repeats) of words\nappearing in # of documents",
              "Number of documents a word appears in", "Volume of appearances for words in bin")
 
     ax = plt.subplot(2, 2, 3)
     pie_data = [len(bin_to_words_no_repeat[index]) for index in bin_indices]
     pie_labels = [label + f" ({pie_data[index] / total_words_no_repeats * 100:.1f}%)"
-                  for label, index in zip(bin_labels, bin_indices)]
+                  for label, index in zip(bin_labels_no_repeat, bin_indices)]
     draw_pie(ax, pie_data, pie_labels, "Percentage of words\nappearing in # of documents")
 
     ax = plt.subplot(2, 2, 4)
     pie_data = [sum(bin_to_words_no_repeat_count_with_repeat[index].values()) for index in bin_indices]
     pie_labels = [label + f" ({pie_data[index] / total_words * 100:.1f}%)"
-                  for label, index in zip(bin_labels, bin_indices)]
+                  for label, index in zip(bin_labels_no_repeat, bin_indices)]
     draw_pie(ax, pie_data, pie_labels, "Percentage of volume of words\nappearing in # of document")
     plt.savefig(os.path.join(args.out, 'word_frequency_documents_bins.jpg'))
 
@@ -144,3 +147,4 @@ if __name__ == "__main__":
                   for label, index in zip(bin_labels, bin_indices)]
     draw_pie(ax, pie_data, pie_labels, "Percentage of volume of words\nappearing # of times in all text")
     plt.savefig(os.path.join(args.out, 'word_frequency_appearances_bins.jpg'))
+    print(bin_to_words[bin_indices[-1]].keys())
