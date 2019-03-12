@@ -90,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--out', default=os.path.join(sys.path[0], 'categories_coverage.jpg'),
                         help="Path to save file to (default: <script location>/categories_coverage.jpg)")
     args = parser.parse_args()
-    if args.percentage > 1.0:
-        raise ValueError(f"Percentage must be in range 0 <= p <= 1.0, got {args.percentage}")
+    if args.percentage > 1.0 or args.percentage <= 0:
+        raise ValueError(f"Percentage must be in range 0 < p <= 1.0, got {args.percentage}")
 
     main(args.percentage, args.resolution, args.out)

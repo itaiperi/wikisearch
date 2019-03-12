@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import torch
 
 from wikisearch.consts.embeddings import EMBEDDING_VECTOR_SIZE
-from wikisearch.consts.mongo import WIKI_LANG, EMBEDDINGS, ENTRY_ID, PAGES, ENTRY_TITLE
+from wikisearch.consts.mongo import WIKI_LANG, ENTRY_ID, PAGES, ENTRY_TITLE, ENTRY_EMBEDDING
 from wikisearch.utils.mongo_handler import MongoHandler
 
 
@@ -21,9 +21,9 @@ class Embedding(metaclass=ABCMeta):
         self.type = self.__class__.__name__
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
-        self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, EMBEDDINGS)
-        self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[self.type.lower()])
-                                   for doc in self._mongo_handler_embeddings.get_all_documents() if self.type.lower() in doc}
+        self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, self.type.lower())
+        self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[ENTRY_EMBEDDING])
+                                   for doc in self._mongo_handler_embeddings.get_all_documents()}
         print(f"-TIME- Took {time.time() - start:2f}s to load {self.__class__.__name__} embedder")
 
     def _load_embedding(self, title):
@@ -37,10 +37,10 @@ class Embedding(metaclass=ABCMeta):
         if vector is not None:
             # Don't need to send to device, because _decode_vector already does it
             return vector
-        page = self._mongo_handler_embeddings.get_page(title, {"title": True, self.__class__.__name__.lower(): True})
+        page = self._mongo_handler_embeddings.get_page(title, {"title": True, ENTRY_EMBEDDING: True})
         # TODO what happens if page is None? should this worry us? raise exception?
         if page:
-            vector = page.get(self.__class__.__name__.lower())
+            vector = page.get(ENTRY_EMBEDDING)
             if vector is not None:
                 # Don't need to send to device, because _decode_vector already does it
                 decoded_vector = self._decode_vector(vector)
@@ -58,7 +58,7 @@ class Embedding(metaclass=ABCMeta):
         if title not in self._cached_embeddings:
             self._cached_embeddings[title] = vector
         if self.save_to_db:
-            page = {'_id': page_id, 'title': title, self.__class__.__name__.lower(): self._encode_vector(vector),
+            page = {'_id': page_id, ENTRY_TITLE: title, ENTRY_EMBEDDING: self._encode_vector(vector),
                     'last_modified': datetime.datetime.now().__str__()}
             self._mongo_handler_embeddings.update_page(page)
 

@@ -1,5 +1,6 @@
 import re
 
+import pymongo
 from pymongo import MongoClient, UpdateOne
 
 from wikisearch.consts.mongo import ENTRY_TITLE
@@ -59,3 +60,6 @@ class MongoHandler:
 
     def bulk_write(self, requests):
         self._collection.bulk_write(requests)
+
+    def create_title_index(self):
+        self._collection.create_index([("title", pymongo.ASCENDING)], unique=True)

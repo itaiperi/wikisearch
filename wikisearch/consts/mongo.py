@@ -8,12 +8,12 @@ ENTRY_CATEGORIES = "categories"
 ENTRY_PID = "pageID"
 ENTRY_TEXT = "text"
 ENTRY_LINKS = "links"
+ENTRY_EMBEDDING = "embedding"
 LINKS_SEPARATOR = ";"
 
 CLEAN_WIKI = "cleanwiki"
 WIKI_LANG = os.environ.get("WIKISEARCH_LANG") or "simplewiki"
 PAGES = "pages"
 CATEGORIES = "categories"
-EMBEDDINGS = "embeddings"
 
 CSV_SEPARATOR = "\t"
