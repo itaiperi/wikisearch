@@ -12,13 +12,31 @@ import torch.utils.data
 
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path
 from scripts.utils import print_progress_bar
-from wikisearch.astar import Astar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.consts.statistics_column_names import *
-from wikisearch.costs.uniform_cost import UniformCost
-from wikisearch.graph import WikiGraph
-from wikisearch.heuristics.nn_heuristic import NNHeuristic
-from wikisearch.strategies import DefaultAstarStrategy
+
+
+def create_distances_dataframe(dataset_file_path):
+    # Loads the dataset file
+    dataset = pd.read_csv(dataset_file_path, sep=CSV_SEPARATOR).values
+
+    # Prepare the statistics table
+    pd.set_option('display.max_columns', 10)
+    pd.set_option('precision', 2)
+    df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST])
+    with torch.no_grad():
+        start = time.time()
+        for idx, (source, destination, actual_distance) in enumerate(dataset, 1):
+            df = df.append(
+                {
+                    SRC_NODE: source,
+                    DST_NODE: destination,
+                    BFS_DIST: actual_distance,
+                    NN_DIST: model(embedder.embed(source).unsqueeze(0), embedder.embed(destination).unsqueeze(0)).round().int().item()
+                }, ignore_index=True)
+            print_progress_bar(idx, len(dataset), time.time() - start, prefix=f'Progress: ', length=50)
+
+    return df.infer_objects()
 
 
 def create_histogram(values, values_ticks, title, output_path, histogram_name):
@@ -46,48 +64,19 @@ if __name__ == "__main__":
     embedder = load_embedder_from_model_path(args.model)
     model = load_model_from_path(args.model)
 
-    # Loads the dataset file
-    dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
-
-    # Prepare the statistics table
-    pd.set_option('display.max_columns', 10)
-    pd.set_option('precision', 2)
-    statistics_df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST])
-    cost = UniformCost(1)
-    heuristic = NNHeuristic(model, embedder)
-    strategy = DefaultAstarStrategy()
-    graph = WikiGraph()
-    astar = Astar(cost, heuristic, strategy, graph)
-    with torch.no_grad():
-        start = time.time()
-        for idx, (source, destination, actual_distance) in enumerate(dataset, 1):
-            # _, astar_distance, _ = astar.run(tokenize_title(source), tokenize_title(destination))
-            statistics_df = statistics_df.append(
-                {
-                    SRC_NODE: source,
-                    DST_NODE: destination,
-                    BFS_DIST: actual_distance,
-                    NN_DIST: model(embedder.embed(source).unsqueeze(0), embedder.embed(destination).unsqueeze(0)).round().int().item()
-                    # ASTAR_DIST: astar_distance
-                }, ignore_index=True)
-            print_progress_bar(idx, len(dataset), time.time() - start, prefix=f'Progress: ', length=50)
+    statistics_df = create_distances_dataframe(args.dataset_file)
 
     # Print out the statistics to csv file
     statistics_file_path = path.join(output_dir, f"{model_file_name}.stats")
-    statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
     statistics_df.to_csv(statistics_file_path, sep=CSV_SEPARATOR, header=True, index=False)
 
     # Compare between BFS to NN
-    # TODO: Try to work directly with statistics_df and not reading the csv as it quite stupid
-    statistics = pd.read_csv(statistics_file_path, sep=CSV_SEPARATOR)
-    distance_type_1 = BFS_DIST
-    distance_type_2 = NN_DIST
-    first_distances = statistics[distance_type_1]
-    second_distances = statistics[distance_type_2]
+    first_distances = statistics_df[BFS_DIST]
+    second_distances = statistics_df[NN_DIST]
 
     # Generate distances histogram
     plt.figure(figsize=(16, 9))
-    plt.title(f"Distances {distance_type_1} vs. {distance_type_2}")
+    plt.title(f"Distances {BFS_DIST} vs. {NN_DIST}")
     plt.xlabel("Distances")
     plt.ylabel("# Occurences")
     width = 0.3
@@ -99,22 +88,22 @@ if __name__ == "__main__":
     second_distances_counter = Counter(second_distances)
     plt.bar(second_distances_ticks + width / 2,
             [second_distances_counter[distance] for distance in second_distances_ticks], width=width, align='center')
-    plt.legend([distance_type_1, distance_type_2])
-    plt.savefig(path.join(os.path.join(output_dir, f"{distance_type_1}_{distance_type_2}_distances_histogram.jpg")))
+    plt.legend([BFS_DIST, NN_DIST])
+    plt.savefig(path.join(os.path.join(output_dir, f"{BFS_DIST}_{NN_DIST}_distances_histogram.jpg")))
 
     # Generate differences histogram
     differences = first_distances - second_distances
     differences_ticks = range((min(differences)), max(differences) + 2)
     create_histogram(differences, differences_ticks,
-                     f"Differences between {distance_type_1} to {distance_type_2}",
-                     output_dir, f"{distance_type_1}_{distance_type_2}_differences_histogram.jpg")
+                     f"Differences between {BFS_DIST} to {NN_DIST}",
+                     output_dir, f"{BFS_DIST}_{NN_DIST}_differences_histogram.jpg")
 
     # Generate absolute differences histogram
     abs_differences = abs(first_distances - second_distances)
     abs_differences_ticks = range(min(abs_differences), max(abs_differences) + 2)
     create_histogram(abs_differences, abs_differences_ticks,
-                     f"Absolute Differences between {distance_type_1} to {distance_type_2}",
-                     output_dir, f"{distance_type_1}_{distance_type_2}_abs_differences_histogram.jpg")
+                     f"Absolute Differences between {BFS_DIST} to {NN_DIST}",
+                     output_dir, f"{BFS_DIST}_{NN_DIST}_abs_differences_histogram.jpg")
 
     # Options used for printing dataset summaries and statistics
     pd.set_option('display.max_columns', 10)
@@ -125,7 +114,7 @@ if __name__ == "__main__":
     differences_length = len(abs_differences)
     statistics_df = statistics_df.append(
         {
-            'Methods Compared': f"{distance_type_1} to {distance_type_2}",
+            'Methods Compared': f"{BFS_DIST} to {NN_DIST}",
             'Admissableness': f"{sum(differences >= 0) / differences_length * 100:.1f}%",
             'Average Difference': differences.mean(),
             'Std': differences.std(),
