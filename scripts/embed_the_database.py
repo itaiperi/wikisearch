@@ -32,7 +32,7 @@ if __name__ == "__main__":
         # Only embed pages which are not embedded yet, and which are not redirects
         pages_without_embeddings_query = {"title": {"$nin": embedded_titles},
                                           ENTRY_REDIRECT_TO: {"$exists": False}}
-        pages = mongo_handler_pages.get_pages(pages_without_embeddings_query)
+        pages = mongo_handler_pages.get_pages(pages_without_embeddings_query).batch_size(args.batch)
         len_pages = pages.count()
 
         start = time.time()
