@@ -21,11 +21,11 @@ class Word2VecTextKMeans(Word2Vec):
         if len(embedded_words) > K_MEANS:
             mean_vectors, _, _ = k_means(embedded_words, K_MEANS, n_init=10)
             # Flatten vectors to one long vector
-            return torch.from_numpy(mean_vectors.reshape([-1]))
+            return torch.from_numpy(mean_vectors.reshape([-1])).float()
 
         else:
             mean_vectors = np.concatenate(embedded_words, axis=0) if len(embedded_words) else np.zeros(1500)
             mean_vectors = np.pad(mean_vectors,
                                   pad_width=(0, EMBEDDING_VECTOR_SIZE[self.type]["embed_dim"] - mean_vectors.size),
                                   mode="constant", constant_values=0)
-            return torch.from_numpy(mean_vectors)
+            return torch.from_numpy(mean_vectors).float()
