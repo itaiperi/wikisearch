@@ -144,7 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--opt", choices=OPTIMIZER_OPTIONS, default="SGD", help="Optimizer to use")
     parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
     parser.add_argument("--early-stop-epochs", type=int, default=0,
-                        help="Number of consecutive epochs with no improvemnet to stop training")
+                        help="Number of consecutive epochs with no improvement to stop training")
     parser.add_argument("--alphas", type=float, nargs=2, default=(1, 1),
                         help="Weights for loss < 0 and loss > 0 for Asymmetric MSE Loss")
     parser.add_argument("--sgd-momentum", type=float, default=0)
