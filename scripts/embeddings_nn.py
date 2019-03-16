@@ -150,7 +150,7 @@ if __name__ == "__main__":
     parser.add_argument("--sgd-momentum", type=float, default=0)
     parser.add_argument("--adam-betas", nargs=2, type=float, default=(0.9, 0.999))
     parser.add_argument("--adam-amsgrad", action="store_true")
-    parser.add_argument("-o", "--out", required=True)
+    parser.add_argument("-o", "--out", required=True, help="Output directory")
     parser.add_argument("--embedding", required=True, choices=AVAILABLE_EMBEDDINGS)
 
     args = parser.parse_args()
@@ -195,10 +195,10 @@ if __name__ == "__main__":
     }
     metadata["model"] = model.get_metadata()
     metadata["embedder"] = embedder.get_metadata()
-    model_name = os.path.splitext(args.out)[0]
+    model_name = os.path.join(args.out, 'model')
+    model_path = model_name + ".pth"
 
-    model_dir = os.path.dirname(args.out)
-    os.makedirs(model_dir, exist_ok=True)
+    os.makedirs(args.out, exist_ok=True)
 
     with open(model_name + ".meta", "w") as meta_file:
         json.dump(metadata, meta_file, indent=2)
@@ -227,7 +227,7 @@ if __name__ == "__main__":
                 "val_loss": val_losses[-1],
             }
             # Save the new model if it"s better
-            torch.save(model.state_dict(), args.out)
+            torch.save(model.state_dict(), model_path)
 
         # Plot train and val losses
         plt.clf()
