@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import json
 import os
 import subprocess
 import sys
@@ -9,51 +10,14 @@ from multiprocessing.pool import Pool
 import pandas as pd
 import tabulate
 
-# from scripts.utils import print_progress_bar
-from wikisearch.heuristics.nn_archs import NN_ARCHS
-
 
 def product_dict(d):
-    return [dict(zip(d, x)) for x in itertools.product(*d.values())]
+    d_listed_values = {k: [v] if type(v) != list else v for k, v in d.items()}
+    return [dict(zip(d_listed_values, x)) for x in itertools.product(*d_listed_values.values())]
 
 
-train_epochs = [120]
-
-# Batch size comparison
-batch_sizes = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [64, 256, 1024], "-e": train_epochs,
-                            "--crit": ["MSELoss"], "--opt": ["SGD"], "--lr": [1e-3], "--embedding": ["FastTextTitle"]})
-
-# NN archs comparison
-nn_archs = product_dict({"--arch": NN_ARCHS[:2], "-b": [256], "-e": train_epochs, "--crit": ["MSELoss"],
-                         "--opt": ["SGD"], "--lr": [1e-3], "--embedding": ["FastTextTitle"]})
-
-# Embeddings comparison
-embeddings = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_epochs, "--crit": ["MSELoss"],
-                           "--opt": ["SGD"], "--lr": [1e-3], "--embedding": ["FastTextTitle", "Word2VecTitle"]})
-
-# Categories, for comparison with "without categories"
-categories = product_dict({"--arch": ["EmbeddingsDistanceCategoriesMultiHot"], "-b": [256], "-e": train_epochs,
-                           "--crit": ["MSELoss"], "--opt": ["SGD"], "--lr": [1e-3],
-                           "--embedding": ["FastTextTitleCategoriesMultiHot", "Word2VecTitleCategoriesMultiHot"]})
-
-# Criterions comparison
-criterions = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_epochs, "--crit": ["MSELoss"],
-                           "--opt": ["SGD"], "--lr": [1e-3], "--embedding": ["FastTextTitle"]}) + \
-             product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_epochs,
-                           "--crit": ["AsymmetricMSELoss"], "--alphas": ["1 3", "1 5", "1 10"], "--opt": ["SGD"],
-                           "--lr": [1e-3], "--embedding": ["FastTextTitle"]})
-
-# SGD with and without momentum
-sgd = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_epochs, "--crit": ["MSELoss"],
-                    "--opt": ["SGD"], "--lr": [1e-3], "--sgd-momentum": [0, 0.9], "--embedding": ["FastTextTitle"]})
-
-# Adam, for comparison with SGD
-adam = product_dict({"--arch": ["EmbeddingsDistance"], "-b": [256], "-e": train_epochs, "--crit": ["MSELoss"],
-                     "--opt": ["Adam"], "--lr": [1e-3], "--embedding": ["FastTextTitle"]})
-
-all_models_params = batch_sizes + nn_archs + embeddings + criterions + sgd + adam + categories
-# Drop duplicates
-all_models_params = [dict(t) for t in {tuple(d.items()) for d in all_models_params}]
+def remove_duplicates(l):
+    return [dict(t) for t in {tuple(d.items()) for d in l}]
 
 
 def train_and_test_model(model_params):
@@ -67,17 +31,26 @@ def train_and_test_model(model_params):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(dest="dataset_dir", help="Directory where dataset train, val, test files are")
+    parser.add_argument('-i', '--inp', help="Json file which includes all experiments parameters")
     parser.add_argument('-o', '--out', help="Directory to which models will be written (Default: dataset directory)")
     parser.add_argument("-w", "--num-workers", default=1, type=int)
     args = parser.parse_args()
     if args.out is None:
         args.out = args.dataset_dir
 
+    # Import parameters from json file, and expand with product_dict
+    with open(args.inp) as params_f:
+        all_models_params = remove_duplicates([params for multi_params in json.load(params_f)
+                                               for params in product_dict(multi_params)])
+
+    params_names = set([list(params.keys()) for params in all_models_params])
+    columns_order = ['--embedding', '--arch', '--crit', '--alphas', '--opt', '--sgd-momentum', '--lr', '-b', '-e']
     models_df = pd.DataFrame(all_models_params)
-    models_df = models_df[['--embedding', '--arch', '--crit', '--alphas', '--opt', '--sgd-momentum', '--lr', '-b', '-e']]
+    models_df = models_df[[column for column in columns_order if column in params_names]]
     print(tabulate.tabulate(models_df, headers='keys', tablefmt='fancy_grid', showindex=False))
     print(f"Total of {len(models_df)} experiments")
 
+    # Add needed parameters, which are not included in the json file
     train_file = os.path.join(args.dataset_dir, "train.csv")
     validation_file = os.path.join(args.dataset_dir, "validation.csv")
 
@@ -88,7 +61,6 @@ if __name__ == "__main__":
                              ([str(params['--sgd-momentum'])] if '--sgd-momentum' in params else []))
         model_dir = model_dir.lower().replace(' ', '_')
         model_dir = os.path.join(args.out, model_dir)
-        model_path = os.path.join(model_dir, 'model.pth')
 
         if os.path.exists(model_dir):
             # Filter models that were already run in the past
@@ -96,11 +68,12 @@ if __name__ == "__main__":
         os.makedirs(model_dir)
         params['-tr'] = train_file
         params['-te'] = validation_file
-        params['-o'] = model_path
+        params['-o'] = model_dir
 
-    # Only models that haven't been run before will have -o parameter
+    # Only models that haven't been run before will have -o parameter, and we run only them!
     all_models_params = [params for params in all_models_params if '-o' in params]
 
+    # Train and test!
     if args.num_workers == 1:
         for params in all_models_params:
             train_and_test_model(params)
