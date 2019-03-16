@@ -30,7 +30,7 @@ class TextKMeansCategoriesMultiHotDistance(EmbeddingsDistance):
         self.conv2 = nn.Conv1d(16, 1, kernel_size=1)
         self.batchnorm2 = nn.BatchNorm1d(1)
         # conv5 -> pool2 -> conv3 -> pool2 -> conv3 -> pool2 -> concatenate -> conv1 -> pool2
-        linear_size_float = ((((((siamese_fc1_size + siamese_categories_fc2_size) - 4) / 2) - 2) / 2) - 2) / 2 / 2
+        linear_size_float = ((((((siamese_fc2_size + siamese_categories_fc2_size) - 4) / 2) - 2) / 2) - 2) / 2 / 2
         linear_size = int(linear_size_float)
         assert linear_size == linear_size_float
         self.fc1 = nn.Linear(linear_size, 1)

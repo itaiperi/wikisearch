@@ -1,8 +1,7 @@
 import json
 import os
+import torch
 from importlib import import_module
-
-from wikisearch.heuristics.nn_archs import *
 
 
 def load_model_from_path(model_location_path):

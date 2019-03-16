@@ -43,7 +43,7 @@ if __name__ == "__main__":
         all_models_params = remove_duplicates([params for multi_params in json.load(params_f)
                                                for params in product_dict(multi_params)])
 
-    params_names = set([list(params.keys()) for params in all_models_params])
+    params_names = set([key for params in all_models_params for key in params.keys()])
     columns_order = ['--embedding', '--arch', '--crit', '--alphas', '--opt', '--sgd-momentum', '--lr', '-b', '-e']
     models_df = pd.DataFrame(all_models_params)
     models_df = models_df[[column for column in columns_order if column in params_names]]
@@ -62,10 +62,10 @@ if __name__ == "__main__":
         model_dir = model_dir.lower().replace(' ', '_')
         model_dir = os.path.join(args.out, model_dir)
 
-        if os.path.exists(model_dir):
-            # Filter models that were already run in the past
+        if os.path.exists(model_dir) and os.listdir(model_dir):
+            # Filter models that were already run in the past (directory exists and is not empty!
             continue
-        os.makedirs(model_dir)
+        os.makedirs(model_dir, exist_ok=True)
         params['-tr'] = train_file
         params['-te'] = validation_file
         params['-o'] = model_dir

@@ -126,13 +126,14 @@ if __name__ == "__main__":
     statistics_df = statistics_df.append(
         {
             'Methods Compared': f"{distance_type_1} to {distance_type_2}",
+            'Admissableness': f"{sum(differences >= 0) / differences_length * 100:.1f}%",
             'Average Difference': differences.mean(),
             'Std': differences.std(),
             'Average Abs Difference': abs_differences.mean(),
             'Std for Abs': abs_differences.std(),
             '50% Percentage': abs_differences.median(),
             '75% Percentage': sorted_differences[round(0.75*differences_length)],
-            '90% Percentage': sorted_differences[round(0.90 * differences_length)]
+            '90% Percentage': sorted_differences[round(0.90 * differences_length)],
         }, ignore_index=True)
 
     # Print out statistics to file

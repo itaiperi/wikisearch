@@ -1,6 +1,6 @@
 [
   {
-    "--arch":"EmbeddingsDistance",
+    "--arch":"TextKMeansDistance",
     "--embedding":[
       "FastTextTextKMeans",
       "Word2VecTextKMeans"
