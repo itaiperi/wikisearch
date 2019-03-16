@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from wikisearch.consts.embeddings import K_MEANS, EMBEDDING_VECTOR_SIZE
+from wikisearch.consts.embeddings import KMEANS, EMBEDDING_VECTOR_SIZE
 from wikisearch.consts.mongo import ENTRY_TEXT
 from wikisearch.embeddings import FastText
 
@@ -19,8 +19,8 @@ class FastTextTextKMeans(FastText):
         embedded_words = [self._model[tagged_word] for tagged_word in tokenized_text
                           if tagged_word in self._model.__dict__['vocab']]
 
-        if len(embedded_words) > K_MEANS:
-            mean_vectors, _, _ = k_means(embedded_words, K_MEANS, n_init=10)
+        if len(embedded_words) > KMEANS:
+            mean_vectors, _, _ = k_means(embedded_words, KMEANS, n_init=10)
             # Flatten vectors to one long vector
             return torch.from_numpy(mean_vectors.reshape([-1])).float()
 
