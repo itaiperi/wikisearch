@@ -70,7 +70,7 @@ class Embedding(metaclass=ABCMeta):
         """
         vector = self._load_embedding(title)
         if vector is not None:
-            return vector
+            return vector.to(self._device)
 
         page = self._mongo_handler_pages.get_page(title)
         embedded_vector = self._embed(page)
@@ -104,7 +104,7 @@ class Embedding(metaclass=ABCMeta):
         :param vector: The vector to decode
         :return: The decoded vector
         """
-        return pickle.loads(vector).to(self._device)
+        return pickle.loads(vector)
 
     @abstractmethod
     def _embed(self, page):

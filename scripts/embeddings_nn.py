@@ -209,6 +209,7 @@ if __name__ == "__main__":
 
     best_val_loss = float("inf")
     start_of_all = time.time()
+    print(f"Using {embedder._device.upper()} device during training and testing...")
     for epoch in range(1, args.epochs + 1):
         train_epoch(args, model, device, train_loader, criterion, optimizer, epoch)
         # Test the model on train and test sets, for progress tracking

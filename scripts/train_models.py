@@ -23,9 +23,10 @@ def remove_duplicates(l):
 def train_and_test_model(model_params):
     params_str = " ".join([" ".join([str(k), str(v)]) for k, v in model_params.items()])
     train_command = f"python {os.path.join(sys.path[0], 'embeddings_nn.py')} {params_str}"
-    test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m {model_params['-o']} -df {model_params['-te']}"
-    subprocess.call(train_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'train.log'), 'w'))
-    subprocess.call(test_command, shell=True, stdout=open(os.path.join(os.path.dirname(model_params['-o']), 'test.log'), 'w+'))
+    test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m" \
+        f"{os.path.join(model_params['-o'], 'model.pth')} -df {model_params['-te']}"
+    subprocess.call(train_command, shell=True, stdout=open(os.path.join(model_params['-o'], 'train.log'), 'w'))
+    subprocess.call(test_command, shell=True, stdout=open(os.path.join(model_params['-o'], 'test.log'), 'w+'))
 
 
 if __name__ == "__main__":
