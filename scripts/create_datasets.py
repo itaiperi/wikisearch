@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import tabulate
 
-from scripts.utils import print_progress_bar, timing
+from scripts.utils import print_progress_bar
 from wikisearch.graph import WikiGraph
 
 # Options used for printing dataset summaries and statistics
@@ -29,7 +29,7 @@ def find_at_distance(graph, source_node, desired_distance):
     :return: node at desired distance / shorter, if there are no nodes at such distance, and the real distance
     """
     if not list(graph.get_node_neighbors(source_node)):
-        return None, 0, 0
+        return None, 0, 0, 0
 
     actual_distance = 0
     nodes_developed = 0
@@ -49,16 +49,18 @@ def find_at_distance(graph, source_node, desired_distance):
         # After getting the number of nodes developed, we can get rid of duplicate nodes in the list
         next_distance_nodes = set(next_distance_nodes)
         next_distance_nodes = next_distance_nodes - all_nodes
+        if not next_distance_nodes:
+            # No neighboring nodes (in shortest distance), so we break and choose one at random
+            break
         nodes_at_distances.append(next_distance_nodes)
         developed_at_distances.append(nodes_developed)
         all_nodes.update(next_distance_nodes)
         times_at_distances.append(time.time() - start)
-        if next_distance_nodes:
-            actual_distance += 1
-            current_distance_nodes = next_distance_nodes
-        else:
-            # No neighboring nodes (in shortest distance), so we break and choose one at random
-            break
+        actual_distance += 1
+        current_distance_nodes = next_distance_nodes
+
+    if actual_distance == 0:
+        return None, 0, 0, 0
 
     actual_distance = desired_distance if actual_distance == desired_distance else rnd_generator.randint(1, actual_distance)
     index = actual_distance - 1
