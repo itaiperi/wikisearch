@@ -10,19 +10,20 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
+from scripts.consts.statistics import *
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path
 from scripts.utils import print_progress_bar
 from wikisearch.consts.mongo import CSV_SEPARATOR
-from wikisearch.consts.statistics_column_names import *
+
+# Prepare the statistics table
+pd.set_option('display.max_columns', 10)
+pd.set_option('precision', 2)
 
 
 def create_distances_dataframe(dataset_file_path):
     # Loads the dataset file
     dataset = pd.read_csv(dataset_file_path, sep=CSV_SEPARATOR).values
 
-    # Prepare the statistics table
-    pd.set_option('display.max_columns', 10)
-    pd.set_option('precision', 2)
     df = pd.DataFrame(columns=[SRC_NODE, DST_NODE, BFS_DIST, NN_DIST])
     with torch.no_grad():
         start = time.time()
@@ -53,9 +54,9 @@ def create_histogram(values, values_ticks, title, output_path, histogram_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
-                                              'notice to not put a \'/\' after the file name')
-    parser.add_argument('-df', '--dataset_file', help='Path to a dataset file')
+    parser.add_argument('-m', '--model', required=True, help='Path to the model file. When running from linux - '
+                                                             'notice to not put a \'/\' after the file name')
+    parser.add_argument('-df', '--dataset_file', required=True, help='Path to a dataset file')
     args = parser.parse_args()
 
     output_dir = path.dirname(args.model)
@@ -108,8 +109,9 @@ if __name__ == "__main__":
     # Options used for printing dataset summaries and statistics
     pd.set_option('display.max_columns', 10)
     pd.set_option('precision', 2)
-    statistics_df = pd.DataFrame(columns=['Methods Compared', 'Average Difference', 'Std', 'Average Abs Difference',
-                                          'Std for Abs', '50% Percentage'])
+    statistics_df = pd.DataFrame(columns=['Methods Compared', 'Admissableness', 'Average Difference', 'Std',
+                                          'Average Abs Difference', 'Std for Abs', '50% Percentage', '75% Percentage',
+                                          '90% Percentage'])
     sorted_differences = abs_differences.sort_values().get_values()
     differences_length = len(abs_differences)
     statistics_df = statistics_df.append(
