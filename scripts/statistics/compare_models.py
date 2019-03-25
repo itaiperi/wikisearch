@@ -122,11 +122,11 @@ if __name__ == "__main__":
     # Add 1 for ground truth distance
     models_parity = (len(model_dir_names) + 1) % 2
     # Add 1 for ground truth
-    for index, model in enumerate(['min_distance'] + model_dir_names, -((len(model_dir_names) + 1) // 2)):
+    for index, model in enumerate(model_dir_names + ['min_distance'], -((len(model_dir_names) + 1) // 2)):
         ticks = np.arange(min(models_df[model]), max(models_df[model]) + 1)
         counter = Counter(models_df[model])
         plt.bar(ticks + (index + (0 if models_parity else 0.5)) * bar_width, [counter[distance] for distance in ticks], width=bar_width, align='center')
-    plt.legend(['Ground Truth'] + model_dir_names)
+    plt.legend(model_dir_names + ['Ground Truth'])
     plt.savefig(os.path.join(os.path.join(args.out, "distances_histogram.jpg")))
 
     # Generate differences histogram

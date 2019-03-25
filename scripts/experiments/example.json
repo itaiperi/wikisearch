@@ -1,23 +1,23 @@
 [
   {
-    "--arch":"TextKMeansDistance",
-    "--embedding":[
+    "--arch": "TextKMeansDistance",
+    "--embedding": [
       "FastTextTextKMeans",
       "Word2VecTextKMeans"
     ],
-    "-b":[
+    "-b": [
       64,
       256,
       1024
     ],
-    "-e":100,
-    "--crit":"MSELoss",
-    "--lr":[
+    "-e": 100,
+    "--crit": "MSELoss",
+    "--lr": [
       1e-2,
       1e-3,
       1e-4
     ],
-    "--opt":"SGD",
-    "--sgd-momentum":0
+    "--opt": "SGD",
+    "--sgd-momentum": 0
   }
 ]
