@@ -15,13 +15,13 @@ class Embedding(metaclass=ABCMeta):
     Base class for representing an embedding type
     """
 
-    def __init__(self, save_to_db=True):
+    def __init__(self, save_to_db=True, db_prefix=""):
         start = time.time()
         self.save_to_db = save_to_db
         self.type = self.__class__.__name__
         self._device = "cuda" if torch.cuda.is_available() else "cpu"
         self._mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
-        self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, self.type.lower())
+        self._mongo_handler_embeddings = MongoHandler(WIKI_LANG, self.type.lower() + db_prefix)
         self._cached_embeddings = {doc[ENTRY_TITLE]: self._decode_vector(doc[ENTRY_EMBEDDING])
                                    for doc in self._mongo_handler_embeddings.get_all_documents()}
         print(f"-TIME- Took {time.time() - start:2f}s to load {self.__class__.__name__} embedder")

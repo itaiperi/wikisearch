@@ -13,6 +13,10 @@ class Word2VecTextKMeans(Word2Vec):
     of all the words in the page's text
     """
 
+    def __init__(self, save_to_db=True):
+        super(Word2VecTextKMeans, self).__init__(save_to_db=save_to_db, db_prefix=KMEANS)
+        self.type = self.type + KMEANS
+
     def _embed(self, page):
         tokenized_text = self.tokenize_text(page[ENTRY_TEXT])
         embedded_words = [self._model[tagged_word] for tagged_word in tokenized_text

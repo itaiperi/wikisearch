@@ -15,11 +15,11 @@ class FastText(Embedding):
     The class representing the fasttext embedding and its derivatives
     """
 
-    def __init__(self, save_to_db=True):
+    def __init__(self, save_to_db=True, db_prefix=""):
         """
         Load the embedding pre-trained model
         """
-        super(FastText, self).__init__(save_to_db)
+        super(FastText, self).__init__(save_to_db, db_prefix)
         cache = Cache()
         start = time.time()
         self._model = cache['fasttext_model']

@@ -16,11 +16,11 @@ class Word2Vec(Embedding):
     The class representing the word2vec embedding and its derivatives
     """
 
-    def __init__(self, save_to_db=True):
+    def __init__(self, save_to_db=True, db_prefix=""):
         """
         Load the embedding pre-trained model
         """
-        super(Word2Vec, self).__init__(save_to_db)
+        super(Word2Vec, self).__init__(save_to_db, db_prefix)
         cache = Cache()
         start = time.time()
         self._model = cache['word2vec_model']
