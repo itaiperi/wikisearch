@@ -4,6 +4,7 @@ import time
 
 from scripts.loaders import load_embedder_by_name
 from scripts.utils import print_progress_bar
+from wikisearch.consts.embeddings import KMEANS
 from wikisearch.consts.mongo import WIKI_LANG, PAGES, ENTRY_TITLE, ENTRY_ID, ENTRY_REDIRECT_TO, ENTRY_EMBEDDING
 from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.utils.mongo_handler import MongoHandler
@@ -17,7 +18,8 @@ if __name__ == "__main__":
 
     mongo_handler_pages = MongoHandler(WIKI_LANG, PAGES)
     for embedding in args.embeddings:
-        embedder_name = embedding.lower()
+        # TODO fix this patch when we have time, this is not the correct way to do this
+        embedder_name = embedding.lower() + (str(KMEANS) if embedding.lower().find("kmeans") > -1 else "")
         # Embeddings' collecion name is the embedding name, in lowercase
         mongo_handler_embeddings = MongoHandler(WIKI_LANG, embedder_name)
         if args.overwrite:

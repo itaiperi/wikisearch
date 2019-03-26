@@ -14,8 +14,7 @@ class Word2VecTextKMeans(Word2Vec):
     """
 
     def __init__(self, save_to_db=True):
-        super(Word2VecTextKMeans, self).__init__(save_to_db=save_to_db, db_prefix=KMEANS)
-        self.type = self.type + KMEANS
+        super(Word2VecTextKMeans, self).__init__(save_to_db=save_to_db, db_prefix=str(KMEANS))
 
     def _embed(self, page):
         tokenized_text = self.tokenize_text(page[ENTRY_TEXT])
