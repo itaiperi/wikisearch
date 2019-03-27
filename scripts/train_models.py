@@ -10,6 +10,8 @@ from multiprocessing.pool import Pool
 import pandas as pd
 import tabulate
 
+from wikisearch.consts.embeddings import KMEANS
+
 
 def product_dict(d):
     d_listed_values = {k: [v] if type(v) != list else v for k, v in d.items()}
@@ -59,7 +61,8 @@ if __name__ == "__main__":
         model_dir = '_'.join([params['--embedding'], params['--arch'], params['--crit'], params['--opt'],
                               str(params['--lr']), str(params['-b'])] +
                              ([params['--alphas']] if '--alphas' in params else []) +
-                             ([str(params['--sgd-momentum'])] if '--sgd-momentum' in params else []))
+                             ([str(params['--sgd-momentum'])] if '--sgd-momentum' in params else []) +
+                             (f'kmeans-{KMEANS}' if params['--embedding'].find('kmeans') > -1 else []))
         model_dir = model_dir.lower().replace(' ', '_')
         model_dir = os.path.join(args.out, model_dir)
 
