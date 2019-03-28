@@ -62,7 +62,7 @@ if __name__ == "__main__":
                               str(params['--lr']), str(params['-b'])] +
                              ([params['--alphas']] if '--alphas' in params else []) +
                              ([str(params['--sgd-momentum'])] if '--sgd-momentum' in params else []) +
-                             (f'kmeans-{KMEANS}' if params['--embedding'].find('kmeans') > -1 else []))
+                             ([f'kmeans-{KMEANS}'] if params['--embedding'].lower().find('kmeans') > -1 else []))
         model_dir = model_dir.lower().replace(' ', '_')
         model_dir = os.path.join(args.out, model_dir)
 
