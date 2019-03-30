@@ -1,18 +1,15 @@
 import argparse
 import json
 import os
-import time
 from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tabulate
-import torch.utils.data
 
-from scripts.consts.model import MODEL_NAME, MODEL_META
-from scripts.loaders import load_embedder_from_model_path, load_model_from_path
-from scripts.utils import print_progress_bar
+from scripts.consts.model import MODEL_META
+from scripts.consts.statistics import NN_DIST
 from wikisearch.consts.mongo import CSV_SEPARATOR
 
 # Prepare the statistics table
@@ -22,32 +19,15 @@ pd.set_option('precision', 2)
 
 
 def generate_models_results(model_dir_paths, gt_results_path):
-    models_df = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR)
+    models_df = pd.read_csv(gt_results_path, sep=CSV_SEPARATOR)
 
-    previous_embedder, embedder = None, None
-    for model_index, (model_dir_path, model_dir_name) in enumerate(zip(args.models, model_dir_names), 1):
-        model_path = os.path.join(model_dir_path, MODEL_NAME)
+    for model_index, (model_dir_path, model_dir_name) in enumerate(zip(model_dir_paths, model_dir_names), 1):
         with open(os.path.join(model_dir_path, MODEL_META)) as meta_file:
             model_meta = json.load(meta_file)
         model_metas.append(model_meta)
+        model_df = pd.read_csv(os.path.join(model_dir_path, 'model.stats'), sep=CSV_SEPARATOR)
+        models_df[model_dir_name] = model_df[NN_DIST]
 
-        if model_meta['embedder']['type'] != previous_embedder:
-            embedder = load_embedder_from_model_path(model_path)
-            previous_embedder = model_meta['embedder']['type']
-        model = load_model_from_path(model_path)
-
-        start = time.time()
-        model_distances = []
-        with torch.no_grad():
-            for index, (source, destination) in enumerate(models_df[['source', 'destination']].values, 1):
-                model_distances.append(
-                    model(embedder.embed(source).unsqueeze(0), embedder.embed(destination).unsqueeze(0)) \
-                    .round().int().item())
-                print_progress_bar(index, len(models_df), time.time() - start, prefix=f'Model #{model_index}',
-                                   length=50)
-        models_df[model_dir_name] = model_distances
-
-        del model
     return models_df
 
 

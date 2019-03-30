@@ -15,8 +15,8 @@ class FastTextTitleTextKMeans(FastTextTitle):
         # embeddings up-front
         fasttext_title_embedder_titles = set(self._fasttext_title_embedder._cached_embeddings.keys())
         fasttext_text_kmeans_embedder_titles = set(self._fasttext_text_kmeans_embedder._cached_embeddings.keys())
-        self._cached_embeddings = {title: torch.cat((self._fasttext_title_embedder.embed(title),
-                                                     self._fasttext_text_kmeans_embedder.embed(title)), dim=0)
+        self._cached_embeddings = {title: torch.cat((self._fasttext_title_embedder._cached_embeddings[title],
+                                                     self._fasttext_text_kmeans_embedder._cached_embeddings[title]), dim=0)
                                    for title in fasttext_title_embedder_titles & fasttext_text_kmeans_embedder_titles}
 
         # Clear caches of sub-embedders, to free up memory, because we've already got those cached entried

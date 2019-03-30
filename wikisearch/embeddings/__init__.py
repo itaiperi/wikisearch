@@ -1,5 +1,4 @@
 from .categories_multihot import CategoriesMultiHot
-from .doc2vec import Doc2Vec
 from .embedding import Embedding
 from .fasttext import FastText
 from .fasttext_text_average import FastTextTextAverage
@@ -18,15 +17,13 @@ from .word2vec_title_text_kmeans_categories_multihot import Word2VecTitleTextKMe
 
 # AVAILABLE_EMBEDDINGS - names of classes
 AVAILABLE_EMBEDDINGS = \
-    [cls.__name__ for cls in [Doc2Vec,
-                              FastTextTitle, FastTextTextAverage, FastTextTextKMeans, FastTextTitleTextKMeans,
+    [cls.__name__ for cls in [FastTextTitle, FastTextTextAverage, FastTextTextKMeans, FastTextTitleTextKMeans,
                               FastTextTextKMeansCategoriesMultiHot, FastTextTitleTextKMeansCategoriesMultiHot,
                               Word2VecTitle, Word2VecTextAverage, Word2VecTextKMeans, Word2VecTitleTextKMeans,
                               Word2VecTextKMeansCategoriesMultiHot, Word2VecTitleTextKMeansCategoriesMultiHot,
                               CategoriesMultiHot]]
 # EMBEDDINGS_MODULES - names of files in which the AVAILABLE_MODULES are at, respectively.
 EMBEDDINGS_MODULES = {
-    Doc2Vec.__name__: 'doc2vec',
     FastText.__name__: 'fasttext',
     FastTextTitle.__name__: 'fasttext_title',
     FastTextTextAverage.__name__: 'fasttext_text_average',

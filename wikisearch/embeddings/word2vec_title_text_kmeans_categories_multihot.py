@@ -17,9 +17,9 @@ class Word2VecTitleTextKMeansCategoriesMultiHot(Word2VecTitle):
         word2vec_title_embedder_titles = set(self._word2vec_title_embedder._cached_embeddings.keys())
         word2vec_text_kmeans_embedder_titles = set(self._word2vec_text_kmeans_embedder._cached_embeddings.keys())
         categories_embedder_titles = set(self._categories_multihot_embedder._cached_embeddings.keys())
-        self._cached_embeddings = {title: torch.cat((self._word2vec_title_embedder.embed(title),
-                                                     self._word2vec_text_kmeans_embedder.embed(title),
-                                                     self._categories_multihot_embedder.embed(title)), dim=0)
+        self._cached_embeddings = {title: torch.cat((self._word2vec_title_embedder._cached_embeddings[title],
+                                                     self._word2vec_text_kmeans_embedder._cached_embeddings[title],
+                                                     self._categories_multihot_embedder._cached_embeddings[title]), dim=0)
                                    for title in word2vec_title_embedder_titles & word2vec_text_kmeans_embedder_titles
                                    & categories_embedder_titles}
 

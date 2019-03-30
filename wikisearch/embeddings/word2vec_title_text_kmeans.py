@@ -15,8 +15,8 @@ class Word2VecTitleTextKMeans(Word2VecTitle):
         # embeddings up-front
         word2vec_title_embedder_titles = set(self._word2vec_title_embedder._cached_embeddings.keys())
         word2vec_text_kmeans_embedder_titles = set(self._word2vec_text_kmeans_embedder._cached_embeddings.keys())
-        self._cached_embeddings = {title: torch.cat((self._word2vec_title_embedder.embed(title),
-                                                     self._word2vec_text_kmeans_embedder.embed(title)), dim=0)
+        self._cached_embeddings = {title: torch.cat((self._word2vec_title_embedder._cached_embeddings[title],
+                                                     self._word2vec_text_kmeans_embedder._cached_embeddings[title]), dim=0)
                                    for title in word2vec_title_embedder_titles & word2vec_text_kmeans_embedder_titles}
 
         # Clear caches of sub-embedders, to free up memory, because we've already got those cached entried

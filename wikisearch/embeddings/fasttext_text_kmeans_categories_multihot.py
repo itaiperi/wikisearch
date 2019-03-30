@@ -15,8 +15,8 @@ class FastTextTextKMeansCategoriesMultiHot(FastTextTitle):
         # embeddings up-front
         fasttext_text_kmeans_embedder_titles = set(self._fasttext_text_kmeans_embedder._cached_embeddings.keys())
         categories_embedder_titles = set(self._categories_multihot_embedder._cached_embeddings.keys())
-        self._cached_embeddings = {title: torch.cat((self._fasttext_text_kmeans_embedder.embed(title),
-                                                     self._categories_multihot_embedder.embed(title)), dim=0)
+        self._cached_embeddings = {title: torch.cat((self._fasttext_text_kmeans_embedder._cached_embeddings[title],
+                                                     self._categories_multihot_embedder._cached_embeddings[title]), dim=0)
                                    for title in fasttext_text_kmeans_embedder_titles & categories_embedder_titles}
 
         # Clear caches of sub-embedders, to free up memory, because we've already got those cached entried

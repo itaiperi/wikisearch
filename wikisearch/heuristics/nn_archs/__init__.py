@@ -6,4 +6,4 @@ from wikisearch.heuristics.nn_archs.title_text_kmeans_categories_multihot_distan
 from wikisearch.heuristics.nn_archs.title_text_kmeans_distance import TitleTextKMeansDistance
 
 NN_ARCHS = [cls.__name__ for cls in [TitleTextKMeansCategoriesMultiHotDistance, TitleDistance, TextKMeansDistance,
-                                     TitleTextKMeansCategoriesMultiHotDistance, TitleTextKMeansDistance]]
+                                     TextKMeansCategoriesMultiHotDistance, TitleTextKMeansDistance]]
