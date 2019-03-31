@@ -7,7 +7,7 @@ _FASTTEXT = 300
 _WORD2VEC = 300
 _categories_mongo = MongoHandler(WIKI_LANG, CATEGORIES)
 _CATEGORIES_MULTIHOT = len(_categories_mongo.get_page(CATEGORIES)[CATEGORIES])
-KMEANS = int(os.environ.get("WIKISEARCH_K_MEANS")) or 5
+KMEANS = int(os.environ.get("WIKISEARCH_K_MEANS"))
 
 EMBEDDING_VECTOR_SIZE = {
     "FastTextTitle": {"embed_dim": _FASTTEXT},

@@ -10,6 +10,7 @@ from multiprocessing.pool import Pool
 import pandas as pd
 import tabulate
 
+from scripts.consts.model import MODEL_NAME
 from wikisearch.consts.embeddings import KMEANS
 
 
@@ -23,6 +24,7 @@ def remove_duplicates(l):
 
 
 def train_and_test_model(model_params):
+    print(f'Running {model_params["-o"]}...')
     params_str = " ".join([" ".join([str(k), str(v)]) for k, v in model_params.items()])
     train_command = f"python {os.path.join(sys.path[0], 'embeddings_nn.py')} {params_str}"
     test_command = f"python {os.path.join(sys.path[0], 'statistics/calculate_distances_statistics.py')} -m" \
@@ -51,7 +53,6 @@ if __name__ == "__main__":
     models_df = pd.DataFrame(all_models_params)
     models_df = models_df[[column for column in columns_order if column in params_names]]
     print(tabulate.tabulate(models_df, headers='keys', tablefmt='fancy_grid', showindex=False))
-    print(f"Total of {len(models_df)} experiments")
 
     # Add needed parameters, which are not included in the json file
     train_file = os.path.join(args.dataset_dir, "train.csv")
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         model_dir = model_dir.lower().replace(' ', '_')
         model_dir = os.path.join(args.out, model_dir)
 
-        if os.path.exists(model_dir) and os.listdir(model_dir):
+        if os.path.exists(os.path.join(model_dir, MODEL_NAME)):
             # Filter models that were already run in the past (directory exists and is not empty!
             continue
         os.makedirs(model_dir, exist_ok=True)
@@ -76,6 +77,7 @@ if __name__ == "__main__":
 
     # Only models that haven't been run before will have -o parameter, and we run only them!
     all_models_params = [params for params in all_models_params if '-o' in params]
+    print(f"Running {len(all_models_params)} out of {len(models_df)} experiments")
 
     # Train and test!
     if args.num_workers == 1:

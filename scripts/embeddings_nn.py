@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import torch.multiprocessing as mp
 import torch.optim as optim
 import torch.utils.data
 from torch.nn import MSELoss
@@ -22,6 +23,7 @@ from wikisearch.heuristics.nn_archs import NN_ARCHS
 
 CRITERION_OPTIONS = ["MSELoss", "AsymmetricMSELoss"]
 OPTIMIZER_OPTIONS = ["SGD", "Adam"]
+mp.set_start_method('spawn')
 
 
 class DistanceDataset(torch.utils.data.Dataset):
@@ -103,7 +105,8 @@ def train_epoch(args, model, device, train_loader, criterion, optimizer, epoch):
         print_progress_bar(min(batch_idx * train_loader.batch_size, len(train_loader.dataset)),
                            len(train_loader.dataset), time.time() - start, prefix=f"Epoch {epoch},",
                            suffix=f"({batch_idx}/{math.ceil(len(train_loader.dataset) / train_loader.batch_size)}"
-                                    f" batches) Loss (prev. batch): {loss.item():.4f}", length=50)
+                                    f" batches) Loss (prev. batch): {loss.item():.4f}", length=50,
+                           interval=min(train_loader.batch_size * 4, 1024))
 
 
 def test(args, model, criterion, test_loader, device):

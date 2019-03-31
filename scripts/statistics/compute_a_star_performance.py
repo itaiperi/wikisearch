@@ -9,11 +9,11 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
+from scripts.consts.statistics import *
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path
 from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import CSV_SEPARATOR
-from wikisearch.consts.statistics_column_names import *
 from wikisearch.costs.uniform_cost import UniformCost
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic

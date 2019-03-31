@@ -5,7 +5,7 @@ import time
 
 
 def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, prefix: str = '', suffix: str = '',
-                       decimals: int = 1, length: int = 100, fill: str = '█'):
+                       decimals: int = 1, length: int = 100, fill: str = '█', interval: int = 1):
     # Taken from Stack Overflow: https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
     """
     Call in a loop to create terminal progress bar
@@ -17,15 +17,17 @@ def print_progress_bar(iteration: int, total: int, elapsed_time: object = None, 
     :param decimals: positive number of decimals in percent complete - Optional
     :param length: character length of bar - Optional
     :param fill: bar fill character - Optional
+    :param interval: every how many iterations should progress bar be updated - Optional
     """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filled_length = int(length * iteration // total)
-    bar = fill * filled_length + '-' * (length - filled_length)
-    print(f'\r{prefix} Progress |{bar}| {percent}% {iteration}/{total} {suffix}.'
-          + f' Elapsed time: {elapsed_time:.1f}s' if elapsed_time else '', end='\r')
-    # Print New Line on Complete
-    if iteration == total:
-        print()
+    if iteration % interval == 0 or iteration == total:
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filled_length = int(length * iteration // total)
+        bar = fill * filled_length + '-' * (length - filled_length)
+        print(f'\r{prefix} Progress |{bar}| {percent}% {iteration}/{total} {suffix}.'
+              + f' Elapsed time: {elapsed_time:.1f}s' if elapsed_time else '', end='\r')
+        # Print New Line on Complete
+        if iteration == total:
+            print()
 
 
 def timing(func, *args, **kwargs):
