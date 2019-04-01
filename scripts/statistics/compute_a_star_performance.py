@@ -10,7 +10,8 @@ import tabulate
 import torch.utils.data
 
 from scripts.consts.statistics import *
-from scripts.loaders import load_embedder_from_model_path, load_model_from_path
+from scripts.loaders import load_embedder_from_model_path, load_model_from_path, load_embedder_by_name, \
+    load_distance_method
 from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import CSV_SEPARATOR
@@ -46,10 +47,15 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
                                               'notice to not put a \'/\' after the file name')
     parser.add_argument('-df', '--dataset_file', help='Path to a dataset file')
+    parser.add_argument('-c', '--cost', default=1, help='The cost for the customizable model')
+    parser.add_argument('-e', '--embedding_name', help='The embedder name')
+    parser.add_argument('-hd', '--heuristic_distance', help='The heuristic distance method')
     args = parser.parse_args()
 
-    embedder = load_embedder_from_model_path(args.model)
-    model = load_model_from_path(args.model)
+    # embedder = load_embedder_from_model_path(args.model)
+    # model = load_model_from_path(args.model)
+    embedder_by_name = load_embedder_by_name(args.embedding_name)
+    heuristic_distance_method = load_distance_method(args.heuristic_distance, embedder_by_name)
 
     # Loads the dataset file
     dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
@@ -60,21 +66,24 @@ if __name__ == "__main__":
                                           NN_DIST, NN_TIME, NN_DEVELOPED, NN_H_DEVELOPED, NN_PATH])
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
 
-    cost = UniformCost(1)
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
-    astar_bfs = Astar(cost, BFSHeuristic(), strategy, graph)
-    astar_nn = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
+
+    astar_bfs = Astar(UniformCost(1), BFSHeuristic(), strategy, graph)
+    # astar_nn = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
+    astar_nn = Astar(UniformCost(int(args.cost)), heuristic_distance_method, strategy, graph)
+
     dataset_len = len(dataset)
     bfs_distance_times = defaultdict(list)
     bfs_distance_developed = defaultdict(list)
     nn_distance_times = defaultdict(list)
     nn_distance_developed = defaultdict(list)
+    nn_computed_distance = defaultdict(list)
 
     # Parameters to save the result to a file
     model_dir_path = path.dirname(args.model)
     model_file_name = path.splitext(path.basename(args.model))[0]
-    statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
+    statistics_file_path = path.join(model_dir_path, f"{model_file_name}_{args.embedding_name}_{args.heuristic_distance}.a_star_stats")
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
@@ -88,6 +97,7 @@ if __name__ == "__main__":
             bfs_distance_developed[bfs_dist].append(bfs_developed)
             nn_distance_times[bfs_dist].append(nn_time)
             nn_distance_developed[bfs_dist].append(nn_developed)
+            nn_computed_distance[bfs_dist].append(nn_dist)
             statistics_df = statistics_df.append(
                 {
                     SRC_NODE: source,
@@ -115,9 +125,9 @@ if __name__ == "__main__":
     width = 0.3
 
     bfs_distances_time, bfs_average_times, bfs_std_time = \
-        calculate_averages(bfs_distance_times, -width / 2)
+        calculate_averages(bfs_distance_times)
     nn_distances_time, nn_average_times, nn_std_time = \
-        calculate_averages(nn_distance_times, width / 2)
+        calculate_averages(nn_distance_times)
 
     plt.title("A* running times")
     plt.xlabel("Distance")
@@ -125,16 +135,15 @@ if __name__ == "__main__":
     plt.bar(bfs_distances_time - width / 2, bfs_average_times, yerr=bfs_std_time, width=width, align='center')
     plt.bar(nn_distances_time + width / 2, nn_average_times, yerr=nn_std_time, width=width, align='center')
     plt.legend([BFS_TIME, NN_TIME])
-    plt.savefig(path.join(model_dir_path, "a_star_running_time.jpg"))
-    plt.show()
+    plt.savefig(path.join(model_dir_path, f"a_star_running_time_{args.embedding_name}_{args.heuristic_distance}.jpg"))
 
     plt.figure()
 
     # Creates the distance-#developed statistics
     bfs_distances_developed, bfs_average_developed, bfs_std_developed = \
-        calculate_averages(bfs_distance_developed, -width / 2)
+        calculate_averages(bfs_distance_developed)
     nn_distances_developed, nn_average_developed, nn_std_developed = \
-        calculate_averages(nn_distance_developed, width / 2)
+        calculate_averages(nn_distance_developed)
 
     plt.title("A* developed")
     plt.xlabel("Distance")
@@ -144,5 +153,17 @@ if __name__ == "__main__":
     plt.bar(nn_distances_developed + width / 2, nn_average_developed,
             yerr=nn_std_developed, width=width, align='center')
     plt.legend([BFS_DEVELOPED, NN_DEVELOPED])
-    plt.savefig(path.join(model_dir_path, "a_star_#developed.jpg"))
-    plt.show()
+    plt.savefig(path.join(model_dir_path, f"a_star_#developed_{args.embedding_name}_{args.heuristic_distance}.jpg"))
+
+    # Creates the actual_distance-computed_distance statistics
+    actual_distances, nn_average_computed_distances, nn_std_computed_distances = \
+        calculate_averages(nn_computed_distance)
+
+    plt.title("Customizable model distances")
+    plt.xlabel("Actual Distance")
+    plt.ylabel("Computed Distance")
+    plt.bar(actual_distances, nn_average_computed_distances, yerr=nn_std_computed_distances, align='center')
+    for actual_distance, average_distance in zip(actual_distances, nn_average_computed_distances):
+        plt.text(actual_distance - 0.1, average_distance, str(average_distance))
+    plt.legend([NN_DEVELOPED])
+    plt.savefig(path.join(model_dir_path, f"a_star_#developed_{args.embedding_name}_{args.heuristic_distance}.jpg"))

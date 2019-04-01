@@ -1,2 +1,3 @@
 from .load_model import load_model_from_path
 from .load_embedder import load_embedder_from_model_path, load_embedder_by_name
+from .load_distance_method import load_distance_method
