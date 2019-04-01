@@ -26,7 +26,7 @@ def print_path(path_pr):
     return "->".join([f"'{node.title}'" for node in path_pr])
 
 
-def calculate_averages(distances_times: dict, indent):
+def calculate_averages(distances_times: dict):
     distances = []
     average_values = []
     std = []
