@@ -48,7 +48,8 @@ class Astar:
             del open_set[next_state]
 
             if next_state == dest_state:
-                return self._reconstruct_path(parents, next_state), closed_set[next_state].g, developed
+                result_path = self._reconstruct_path(parents, next_state)
+                return result_path, len(result_path)-1, developed
 
             developed += 1
             for succ_state in self._graph.get_node_neighbors(next_state):
