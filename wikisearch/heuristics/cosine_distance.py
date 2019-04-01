@@ -1,9 +1,9 @@
 from wikisearch.heuristics.heuristic import Heuristic
 
 
-class CosineSimilarity(Heuristic):
+class CosineDistance(Heuristic):
     def __init__(self, embedder, eps=1e-8):
-        super(CosineSimilarity, self).__init__()
+        super(CosineDistance, self).__init__()
         self._embedder = embedder
         self.eps = eps
 
