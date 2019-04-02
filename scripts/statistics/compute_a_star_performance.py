@@ -83,7 +83,9 @@ if __name__ == "__main__":
     # Parameters to save the result to a file
     model_dir_path = path.dirname(args.model)
     model_file_name = path.splitext(path.basename(args.model))[0]
-    statistics_file_path = path.join(model_dir_path, f"{model_file_name}_{args.embedding_name}_{args.heuristic_distance}.a_star_stats")
+    statistics_file_name = f"{args.embedding_name}_{args.heuristic_distance}"
+    statistics_file_path = path.join(model_dir_path, f"{statistics_file_name}.a_star_stats")
+    statistics_file_path_csv = path.join(model_dir_path, f"{statistics_file_name}.csv")
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
@@ -115,36 +117,31 @@ if __name__ == "__main__":
                 }, ignore_index=True)
             # Print out the statistics as tabulate
             statistics_df_tabulate = \
-                tabulate.tabulate(statistics_df, headers='keys', showindex=False, tablefmt='fancy_grid',
-                                  floatfmt='.5f')
+                tabulate.tabulate(statistics_df, headers='keys', tablefmt='fancy_grid', floatfmt='.5f')
             with open(statistics_file_path, 'w', encoding='utf8') as f:
                 f.write(statistics_df_tabulate)
             print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'A*', length=50)
-
+    statistics_df.drop(columns=[BFS_PATH, NN_PATH]).to_csv(statistics_file_path_csv)
     # Creates the distance-time statistics
     width = 0.3
 
-    bfs_distances_time, bfs_average_times, bfs_std_time = \
-        calculate_averages(bfs_distance_times)
-    nn_distances_time, nn_average_times, nn_std_time = \
-        calculate_averages(nn_distance_times)
+    bfs_distances_time, bfs_average_times, bfs_std_time = calculate_averages(bfs_distance_times)
+    nn_distances_time, nn_average_times, nn_std_time = calculate_averages(nn_distance_times)
 
+    plt.figure()
     plt.title("A* running times")
     plt.xlabel("Distance")
     plt.ylabel("Time")
     plt.bar(bfs_distances_time - width / 2, bfs_average_times, yerr=bfs_std_time, width=width, align='center')
     plt.bar(nn_distances_time + width / 2, nn_average_times, yerr=nn_std_time, width=width, align='center')
     plt.legend([BFS_TIME, NN_TIME])
-    plt.savefig(path.join(model_dir_path, f"a_star_running_time_{args.embedding_name}_{args.heuristic_distance}.jpg"))
+    plt.savefig(path.join(model_dir_path, f"a_star_running_time_{statistics_file_name}.jpg"))
+
+    # Creates the distance-developed statistics
+    bfs_distances_developed, bfs_average_developed, bfs_std_developed = calculate_averages(bfs_distance_developed)
+    nn_distances_developed, nn_average_developed, nn_std_developed = calculate_averages(nn_distance_developed)
 
     plt.figure()
-
-    # Creates the distance-#developed statistics
-    bfs_distances_developed, bfs_average_developed, bfs_std_developed = \
-        calculate_averages(bfs_distance_developed)
-    nn_distances_developed, nn_average_developed, nn_std_developed = \
-        calculate_averages(nn_distance_developed)
-
     plt.title("A* developed")
     plt.xlabel("Distance")
     plt.ylabel("#Developed")
@@ -153,12 +150,13 @@ if __name__ == "__main__":
     plt.bar(nn_distances_developed + width / 2, nn_average_developed,
             yerr=nn_std_developed, width=width, align='center')
     plt.legend([BFS_DEVELOPED, NN_DEVELOPED])
-    plt.savefig(path.join(model_dir_path, f"a_star_#developed_{args.embedding_name}_{args.heuristic_distance}.jpg"))
+    plt.savefig(path.join(model_dir_path, f"a_star_developed_{statistics_file_name}.jpg"))
 
     # Creates the actual_distance-computed_distance statistics
     actual_distances, nn_average_computed_distances, nn_std_computed_distances = \
         calculate_averages(nn_computed_distance)
 
+    plt.figure()
     plt.title("Customizable model distances")
     plt.xlabel("Actual Distance")
     plt.ylabel("Computed Distance")
@@ -166,4 +164,4 @@ if __name__ == "__main__":
     for actual_distance, average_distance in zip(actual_distances, nn_average_computed_distances):
         plt.text(actual_distance - 0.1, average_distance, str(average_distance))
     plt.legend([NN_DEVELOPED])
-    plt.savefig(path.join(model_dir_path, f"a_star_#developed_{args.embedding_name}_{args.heuristic_distance}.jpg"))
+    plt.savefig(path.join(model_dir_path, f"a_star_distance_{statistics_file_name}.jpg"))
