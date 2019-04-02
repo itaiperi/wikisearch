@@ -32,40 +32,37 @@ def generate_models_results(model_dir_paths, gt_results_path):
 
 
 def get_statistics(models_df, model_names):
-    statistics_df = pd.DataFrame(columns=['Model Name', 'Admissableness', 'Average Difference', 'Std',
-                                          'Average Abs Difference', 'Std for Abs', '50% Percentage', '75% Percentage',
-                                          '90% Percentage'])
+    statistics_df = pd.DataFrame(columns=['Model Name', 'Admissablity', 'AUC Quantile', 'Average Difference',
+                                          'Std', 'Average Abs Difference', 'Std for Abs', '50% Percentage',
+                                          '75% Percentage', '90% Percentage'])
 
     for model_name in model_names:
         differences = models_df['min_distance'] - models_df[model_name]
         abs_differences = abs(differences)
         differences_length = len(abs_differences)
+        sorted_abs_differences = sorted(abs_differences)
+        interval = 0.01
+        # quantiles is [0, interval, 2*interval, ..., 1 - interval, 1]
+        quantiles = np.arange(0, 1 + interval, interval)
+        distances_at_quantiles = np.array(
+            [sorted_abs_differences[max(0, int(round(quantile * differences_length)) - 1)] for quantile in quantiles])
+        auc = distances_at_quantiles[1:].sum() * interval
+        admissability = sum(differences >= 0) / differences_length
         statistics_df = statistics_df.append(
             {
                 'Model Name': model_name,
-                'Admissableness': f"{sum(differences >= 0) / differences_length * 100:.1f}%",
+                'Admissablity': f"{admissability * 100:.1f}%",
+                'AUC Quantile': auc,
                 'Average Difference': differences.mean(),
                 'Std': differences.std(),
                 'Average Abs Difference': abs_differences.mean(),
                 'Std for Abs': abs_differences.std(),
                 '50% Percentage': abs_differences.median(),
-                '75% Percentage': abs_differences.quantile(0.75),
-                '90% Percentage': abs_differences.quantile(0.9),
+                '75% Percentage': abs_differences.quantile(0.75, 'lower'),
+                '90% Percentage': abs_differences.quantile(0.9, 'lower'),
             }, ignore_index=True)
     statistics_df = statistics_df.rename(lambda col: col.replace(' ', '\n'), axis='columns')
     return statistics_df
-
-
-def create_histogram(values, values_ticks, title, output_path, histogram_name):
-    plt.figure(figsize=(16, 9))
-    plt.title(title)
-    plt.xlabel("Differences")
-    plt.ylabel("# Occurences")
-    counts, _, _ = plt.hist(values, bins=values_ticks, align='left')
-    plt.gca().set_xticks(values_ticks[:-1])
-    for i, distance in enumerate(values_ticks[:-1]):
-        plt.text(distance, counts[i] + 1, str(int(counts[i])))
-    plt.savefig(os.path.join(output_path, histogram_name))
 
 
 if __name__ == "__main__":
@@ -137,3 +134,26 @@ if __name__ == "__main__":
                 width=bar_width, align='center')
     plt.legend(model_dir_names)
     plt.savefig(os.path.join(os.path.join(args.out, "abs_differences_histogram.jpg")))
+
+    # Generate differences quantiles graph
+    plt.figure(figsize=(16, 9))
+    plt.title(f"Absolute Differences from Ground Truth for Various Models")
+    plt.xlabel("Quantiles")
+    plt.ylabel("# of Distance Differences at Quantile")
+    legend = []
+    for index, model in enumerate(model_dir_names, -(len(model_dir_names) // 2)):
+        abs_differences = abs(models_df['min_distance'] - models_df[model])
+        sorted_abs_differences = sorted(abs_differences)
+        differences_length = len(sorted_abs_differences)
+        interval = 0.01
+        # quantiles is [0, interval, 2*interval, ..., 1 - interval, 1]
+        quantiles = np.arange(0, 1 + interval, interval)
+        distances_at_quantiles = np.array(
+            [sorted_abs_differences[max(0, int(round(quantile * differences_length)) - 1)] for quantile in quantiles])
+        auc = distances_at_quantiles[1:].sum() * interval
+        plt.plot(quantiles, distances_at_quantiles, drawstyle='steps')
+        legend.append(f"{model}'s AUC = {auc:.3f}")
+    plt.legend(legend)
+    plt.xticks(np.arange(0, 1.05, 0.05))
+    plt.grid(True, which='both')
+    plt.savefig(os.path.join(args.out, 'differences_quantiles.jpg'))

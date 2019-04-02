@@ -52,6 +52,27 @@ def create_histogram(values, values_ticks, title, output_path, histogram_name):
     plt.savefig(path.join(output_path, histogram_name))
 
 
+def create_percentile_graph(values, title, output_path):
+    sorted_values = sorted(values)
+    values_length = len(sorted_values)
+    interval = 0.01
+    # quantiles is [0, interval, 2*interval, ..., 1 - interval, 1]
+    quantiles = np.arange(0, 1 + interval, interval)
+    plt.figure(figsize=(16, 9))
+    plt.title(title)
+    plt.xlabel("Quantiles")
+    plt.ylabel("# of Distance Differences at Quantile")
+    distances_at_quantiles = np.array([sorted_values[max(0, int(round(quantile * values_length)) - 1)] for quantile in quantiles])
+    auc = distances_at_quantiles[1:].sum() * interval
+    plt.plot(quantiles, distances_at_quantiles, drawstyle='steps')
+    plt.fill_between(quantiles, 0, distances_at_quantiles, step='pre', alpha=0.3)
+    plt.legend([f"AUC = {auc:.3f}"])
+    plt.xticks(np.arange(0, 1.05, 0.05))
+    plt.grid(True, which='both')
+    plt.savefig(path.join(output_path, 'differences_quantiles.jpg'))
+    return auc
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--model', required=True, help='Path to the model file. When running from linux - '
@@ -106,25 +127,29 @@ if __name__ == "__main__":
                      f"Absolute Differences between {BFS_DIST} to {NN_DIST}",
                      output_dir, f"{BFS_DIST}_{NN_DIST}_abs_differences_histogram.jpg")
 
+    percentile_graph_auc = create_percentile_graph(abs_differences, 'Quantiles of Distance Differences', output_dir)
+    differences_length = len(abs_differences)
+    admissability = sum(differences >= 0) / differences_length
+
     # Options used for printing dataset summaries and statistics
     pd.set_option('display.max_columns', 10)
     pd.set_option('precision', 2)
-    statistics_df = pd.DataFrame(columns=['Methods Compared', 'Admissableness', 'Average Difference', 'Std',
-                                          'Average Abs Difference', 'Std for Abs', '50% Percentage', '75% Percentage',
-                                          '90% Percentage'])
+    statistics_df = pd.DataFrame(columns=['Methods Compared', 'Admissablity', 'AUC Quantile', 'Average Difference',
+                                          'Std', 'Average Abs Difference', 'Std for Abs', '50% Percentage',
+                                          '75% Percentage', '90% Percentage'])
     sorted_differences = abs_differences.sort_values().get_values()
-    differences_length = len(abs_differences)
     statistics_df = statistics_df.append(
         {
             'Methods Compared': f"{BFS_DIST} to {NN_DIST}",
-            'Admissableness': f"{sum(differences >= 0) / differences_length * 100:.1f}%",
+            'Admissablity': f"{admissability * 100:.1f}%",
+            'AUC Quantile': percentile_graph_auc,
+            '50% Percentage': abs_differences.median(),
+            '75% Percentage': sorted_differences[round(0.75 * differences_length)],
+            '90% Percentage': sorted_differences[round(0.90 * differences_length)],
             'Average Difference': differences.mean(),
             'Std': differences.std(),
             'Average Abs Difference': abs_differences.mean(),
-            'Std for Abs': abs_differences.std(),
-            '50% Percentage': abs_differences.median(),
-            '75% Percentage': sorted_differences[round(0.75*differences_length)],
-            '90% Percentage': sorted_differences[round(0.90 * differences_length)],
+            'Std for Abs': abs_differences.std()
         }, ignore_index=True)
 
     # Print out statistics to file
