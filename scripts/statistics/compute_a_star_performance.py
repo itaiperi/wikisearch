@@ -9,6 +9,7 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
+from scripts.consts.model import MODEL_TYPE, NN_MODEL, FUNC_MODEL
 from scripts.consts.statistics import *
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path, load_embedder_by_name, \
     load_distance_method
@@ -21,11 +22,6 @@ from wikisearch.heuristics import BFSHeuristic
 from wikisearch.heuristics.nn_heuristic import NNHeuristic
 from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
-
-
-NN_MODEL = "nn_model"
-DIST_H_MODEL = "dist_h_model"
-SUBPARSER_NAME = "subparser_name"
 
 
 def print_path(path_pr):
@@ -49,20 +45,20 @@ def calculate_averages(distances_times: dict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-df', '--dataset-file', help='Path to a dataset file')
+    parser.add_argument('-df', '--dataset-file', required=True, help='Path to a dataset file')
     parser.add_argument('-c', '--cost', default=1, help='The cost for the customizable model')
-    subparsers = parser.add_subparsers(help='sub-command help', dest=SUBPARSER_NAME)
+    subparsers = parser.add_subparsers(help='sub-command help', dest=MODEL_TYPE)
 
     # Creates the parser for a nn model
     nn_parser = subparsers.add_parser(NN_MODEL, help='nn_model help')
-    nn_parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
-                                                 'notice to not put a \'/\' after the file name')
+    nn_parser.add_argument('-m', '--model', required=True, help='Path to the model file. When running from linux '
+                                                                '- notice to not put a \'/\' after the file name')
 
     # Creates the parser for a distance heuristic model
-    dist_h_parser = subparsers.add_parser(DIST_H_MODEL, help='dish_h_model help')
-    dist_h_parser.add_argument('-e', '--embedding', help='The embedder name')
-    dist_h_parser.add_argument('-dh', '--distance-heuristic', help='The heuristic distance method')
-    dist_h_parser.add_argument('-o', '--out', help='Output directory')
+    dist_h_parser = subparsers.add_parser(FUNC_MODEL, help='func_model help')
+    dist_h_parser.add_argument('-e', '--embedding', required=True, help='The embedder name')
+    dist_h_parser.add_argument('-dh', '--distance-heuristic', required=True, help='The heuristic distance method')
+    dist_h_parser.add_argument('-o', '--out', required=True, help='Output directory')
 
     args = parser.parse_args()
 
@@ -79,7 +75,7 @@ if __name__ == "__main__":
     graph = WikiGraph()
 
     astar_bfs = Astar(UniformCost(1), BFSHeuristic(), strategy, graph)
-    if SUBPARSER_NAME == NN_MODEL:
+    if MODEL_TYPE == NN_MODEL:
         model_dir_path = path.dirname(args.model)
         embedder = load_embedder_from_model_path(args.model)
         model = load_model_from_path(args.model)

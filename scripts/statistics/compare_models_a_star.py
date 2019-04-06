@@ -17,7 +17,7 @@ pd.set_option('precision', 2)
 # Constant strings
 BFS = "BFS"
 DEVELOPED = "Developed"
-TIME = "Time"
+TIME = "Time (s)"
 DISTANCE = "Distance"
 
 
