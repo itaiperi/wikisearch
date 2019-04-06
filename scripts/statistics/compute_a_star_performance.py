@@ -120,7 +120,7 @@ if __name__ == "__main__":
             with open(statistics_file_path, 'w', encoding='utf8') as f:
                 f.write(statistics_df_tabulate)
             print_progress_bar(idx, dataset_len, time.time() - start, prefix=f'A*', length=50)
-    statistics_df.drop(columns=[BFS_PATH, NN_PATH]).to_csv(statistics_file_path_csv)
+    statistics_df.drop(columns=[BFS_PATH, NN_PATH]).to_csv(statistics_file_path_csv, sep=CSV_SEPARATOR)
     # Creates the distance-time statistics
     width = 0.3
 
