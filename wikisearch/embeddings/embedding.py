@@ -38,7 +38,6 @@ class Embedding(metaclass=ABCMeta):
             # Don't need to send to device, because _decode_vector already does it
             return vector
         page = self._mongo_handler_embeddings.get_page(title, {"title": True, ENTRY_EMBEDDING: True})
-        # TODO what happens if page is None? should this worry us? raise exception?
         if page:
             vector = page.get(ENTRY_EMBEDDING)
             if vector is not None:
