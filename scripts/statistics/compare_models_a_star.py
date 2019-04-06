@@ -67,10 +67,6 @@ if __name__ == "__main__":
     models_base_dir = os.path.dirname(args.models[0])
 
     models_df = generate_models_results(args.models)
-    # Print out the distances to csv file
-    distances_file_path = os.path.join(models_base_dir, f"a_star.stats")
-    models_df.to_csv(distances_file_path, sep=CSV_SEPARATOR, header=True, index=False)
-
     model_dir_names.append("BFS")
 
     # Add 1 for BFS, and 1 for spacing

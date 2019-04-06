@@ -23,6 +23,11 @@ from wikisearch.strategies import DefaultAstarStrategy
 from wikisearch.utils.clean_data import tokenize_title
 
 
+NN_MODEL = "nn_model"
+DIST_H_MODEL = "dist_h_model"
+SUBPARSER_NAME = "subparser_name"
+
+
 def print_path(path_pr):
     return "->".join([f"'{node.title}'" for node in path_pr])
 
@@ -44,18 +49,22 @@ def calculate_averages(distances_times: dict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
-                                              'notice to not put a \'/\' after the file name')
-    parser.add_argument('-df', '--dataset_file', help='Path to a dataset file')
+    parser.add_argument('-df', '--dataset-file', help='Path to a dataset file')
     parser.add_argument('-c', '--cost', default=1, help='The cost for the customizable model')
-    parser.add_argument('-e', '--embedding_name', help='The embedder name')
-    parser.add_argument('-hd', '--heuristic_distance', help='The heuristic distance method')
-    args = parser.parse_args()
+    subparsers = parser.add_subparsers(help='sub-command help', dest=SUBPARSER_NAME)
 
-    embedder = load_embedder_from_model_path(args.model)
-    model = load_model_from_path(args.model)
-    # embedder_by_name = load_embedder_by_name(args.embedding_name)
-    # heuristic_distance_method = load_distance_method(args.heuristic_distance, embedder_by_name)
+    # Creates the parser for a nn model
+    nn_parser = subparsers.add_parser(NN_MODEL, help='nn_model help')
+    nn_parser.add_argument('-m', '--model', help='Path to the model file. When running from linux - '
+                                                 'notice to not put a \'/\' after the file name')
+
+    # Creates the parser for a distance heuristic model
+    dist_h_parser = subparsers.add_parser(DIST_H_MODEL, help='dish_h_model help')
+    dist_h_parser.add_argument('-e', '--embedding', help='The embedder name')
+    dist_h_parser.add_argument('-dh', '--distance-heuristic', help='The heuristic distance method')
+    dist_h_parser.add_argument('-o', '--out', help='Output directory')
+
+    args = parser.parse_args()
 
     # Loads the dataset file
     dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
@@ -70,8 +79,16 @@ if __name__ == "__main__":
     graph = WikiGraph()
 
     astar_bfs = Astar(UniformCost(1), BFSHeuristic(), strategy, graph)
-    astar_nn = Astar(UniformCost(int(args.cost)), NNHeuristic(model, embedder), strategy, graph)
-    # astar_nn = Astar(UniformCost(int(args.cost)), heuristic_distance_method, strategy, graph)
+    if SUBPARSER_NAME == NN_MODEL:
+        model_dir_path = path.dirname(args.model)
+        embedder = load_embedder_from_model_path(args.model)
+        model = load_model_from_path(args.model)
+        astar_nn = Astar(UniformCost(int(args.cost)), NNHeuristic(model, embedder), strategy, graph)
+    else:
+        model_dir_path = args.out
+        embedder = load_embedder_by_name(args.embedding)
+        distance_heuristic_method = load_distance_method(args.distance_heuristic, embedder)
+        astar_nn = Astar(UniformCost(int(args.cost)), distance_heuristic_method, strategy, graph)
 
     dataset_len = len(dataset)
     bfs_distance_times = defaultdict(list)
@@ -81,10 +98,8 @@ if __name__ == "__main__":
     nn_computed_distance = defaultdict(list)
 
     # Parameters to save the result to a file
-    model_dir_path = path.dirname(args.model)
-    model_file_name = path.splitext(path.basename(args.model))[0]
-    statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
-    statistics_file_path_csv = path.join(model_dir_path, f"{model_file_name}_a_star_stats.csv")
+    statistics_file_path = path.join(model_dir_path, "model.a_star_stats")
+    statistics_file_path_csv = path.join(model_dir_path, "model_a_star_stats.csv")
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
