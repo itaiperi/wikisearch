@@ -52,10 +52,10 @@ if __name__ == "__main__":
     parser.add_argument('-hd', '--heuristic_distance', help='The heuristic distance method')
     args = parser.parse_args()
 
-    # embedder = load_embedder_from_model_path(args.model)
-    # model = load_model_from_path(args.model)
-    embedder_by_name = load_embedder_by_name(args.embedding_name)
-    heuristic_distance_method = load_distance_method(args.heuristic_distance, embedder_by_name)
+    embedder = load_embedder_from_model_path(args.model)
+    model = load_model_from_path(args.model)
+    # embedder_by_name = load_embedder_by_name(args.embedding_name)
+    # heuristic_distance_method = load_distance_method(args.heuristic_distance, embedder_by_name)
 
     # Loads the dataset file
     dataset = pd.read_csv(args.dataset_file, sep=CSV_SEPARATOR).values
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     graph = WikiGraph()
 
     astar_bfs = Astar(UniformCost(1), BFSHeuristic(), strategy, graph)
-    # astar_nn = Astar(cost, NNHeuristic(model, embedder), strategy, graph)
-    astar_nn = Astar(UniformCost(int(args.cost)), heuristic_distance_method, strategy, graph)
+    astar_nn = Astar(UniformCost(int(args.cost)), NNHeuristic(model, embedder), strategy, graph)
+    # astar_nn = Astar(UniformCost(int(args.cost)), heuristic_distance_method, strategy, graph)
 
     dataset_len = len(dataset)
     bfs_distance_times = defaultdict(list)
@@ -83,9 +83,8 @@ if __name__ == "__main__":
     # Parameters to save the result to a file
     model_dir_path = path.dirname(args.model)
     model_file_name = path.splitext(path.basename(args.model))[0]
-    statistics_file_name = f"{args.embedding_name}_{args.heuristic_distance}"
-    statistics_file_path = path.join(model_dir_path, f"{statistics_file_name}.a_star_stats")
-    statistics_file_path_csv = path.join(model_dir_path, f"{statistics_file_name}.csv")
+    statistics_file_path = path.join(model_dir_path, f"{model_file_name}.a_star_stats")
+    statistics_file_path_csv = path.join(model_dir_path, f"{model_file_name}_a_star_stats.csv")
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
@@ -135,7 +134,7 @@ if __name__ == "__main__":
     plt.bar(bfs_distances_time - width / 2, bfs_average_times, yerr=bfs_std_time, width=width, align='center')
     plt.bar(nn_distances_time + width / 2, nn_average_times, yerr=nn_std_time, width=width, align='center')
     plt.legend([BFS_TIME, NN_TIME])
-    plt.savefig(path.join(model_dir_path, f"a_star_running_time_{statistics_file_name}.jpg"))
+    plt.savefig(path.join(model_dir_path, "a_star_running_time.jpg"))
 
     # Creates the distance-developed statistics
     bfs_distances_developed, bfs_average_developed, bfs_std_developed = calculate_averages(bfs_distance_developed)
@@ -150,7 +149,7 @@ if __name__ == "__main__":
     plt.bar(nn_distances_developed + width / 2, nn_average_developed,
             yerr=nn_std_developed, width=width, align='center')
     plt.legend([BFS_DEVELOPED, NN_DEVELOPED])
-    plt.savefig(path.join(model_dir_path, f"a_star_developed_{statistics_file_name}.jpg"))
+    plt.savefig(path.join(model_dir_path, "a_star_developed.jpg"))
 
     # Creates the actual_distance-computed_distance statistics
     actual_distances, nn_average_computed_distances, nn_std_computed_distances = \
@@ -164,4 +163,4 @@ if __name__ == "__main__":
     for actual_distance, average_distance in zip(actual_distances, nn_average_computed_distances):
         plt.text(actual_distance - 0.1, average_distance, str(average_distance))
     plt.legend([NN_DEVELOPED])
-    plt.savefig(path.join(model_dir_path, f"a_star_distance_{statistics_file_name}.jpg"))
+    plt.savefig(path.join(model_dir_path, "a_star_distance.jpg"))
