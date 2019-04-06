@@ -10,7 +10,6 @@ from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
 from wikisearch.heuristics.nn_heuristic import NNHeuristic
 from wikisearch.strategies import DefaultAstarStrategy
-from wikisearch.utils.clean_data import tokenize_title
 
 if __name__ == '__main__':
     """
@@ -54,8 +53,7 @@ if __name__ == '__main__':
     astar = Astar(cost, heuristic, strategy, graph)
 
     start = time.time()
-    path, distance, developed = \
-        astar.run(tokenize_title(args.source), tokenize_title(args.dest), args.time_limit)
+    path, distance, developed = astar.run(args.source, args.dest, args.time_limit)
     if path:
         print(f"Path: {' -> '.join([node.title for node in path])}")
         print(f"Distance: {distance}")

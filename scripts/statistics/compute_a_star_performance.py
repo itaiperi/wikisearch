@@ -21,7 +21,6 @@ from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
 from wikisearch.heuristics.nn_heuristic import NNHeuristic
 from wikisearch.strategies import DefaultAstarStrategy
-from wikisearch.utils.clean_data import tokenize_title
 
 
 def print_path(path_pr):
@@ -99,12 +98,8 @@ if __name__ == "__main__":
     with torch.no_grad():
         start = time.time()
         for idx, (source, destination, _) in enumerate(dataset, 1):
-            tokenized_source = tokenize_title(source)
-            tokenized_destination = tokenize_title(destination)
-            bfs_path, bfs_dist, bfs_developed, bfs_time = \
-                timing(astar_bfs.run, tokenized_source, tokenized_destination)
-            nn_path, nn_dist, nn_developed, nn_time = \
-                timing(astar_nn.run, tokenized_source, tokenized_destination)
+            bfs_path, bfs_dist, bfs_developed, bfs_time = timing(astar_bfs.run, source, destination)
+            nn_path, nn_dist, nn_developed, nn_time = timing(astar_nn.run, source, destination)
             bfs_distance_times[bfs_dist].append(bfs_time)
             bfs_distance_developed[bfs_dist].append(bfs_developed)
             nn_distance_times[bfs_dist].append(nn_time)
