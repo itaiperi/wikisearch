@@ -9,7 +9,7 @@ import pandas as pd
 import tabulate
 import torch.utils.data
 
-from scripts.consts.model import MODEL_TYPE, NN_MODEL, FUNC_MODEL
+from scripts.consts.model import NN_MODEL, FUNC_MODEL
 from scripts.consts.statistics import *
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path, load_embedder_by_name, \
     load_distance_method
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-df', '--dataset-file', required=True, help='Path to a dataset file')
     parser.add_argument('-c', '--cost', default=1, help='The cost for the customizable model')
-    subparsers = parser.add_subparsers(help='sub-command help', dest=MODEL_TYPE)
+    subparsers = parser.add_subparsers(help='sub-command help', dest="model_type")
 
     # Creates the parser for a nn model
     nn_parser = subparsers.add_parser(NN_MODEL, help='nn_model help')
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     graph = WikiGraph()
 
     astar_bfs = Astar(UniformCost(1), BFSHeuristic(), strategy, graph)
-    if MODEL_TYPE == NN_MODEL:
+    if args.model_type == NN_MODEL:
         model_dir_path = path.dirname(args.model)
         embedder = load_embedder_from_model_path(args.model)
         model = load_model_from_path(args.model)

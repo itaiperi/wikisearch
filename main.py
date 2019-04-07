@@ -1,7 +1,7 @@
 import argparse
 import time
 
-from scripts.consts.model import MODEL_TYPE, NN_MODEL, FUNC_MODEL
+from scripts.consts.model import NN_MODEL, FUNC_MODEL
 from scripts.loaders import load_embedder_from_model_path, load_model_from_path, load_embedder_by_name, \
     load_distance_method
 from wikisearch.astar import Astar
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--cost', default=1, help='The cost price')
     parser.add_argument('-t', '--time_limit', type=float,
                         help="Time limit (seconds) for source-dest distance calculation")
-    subparsers = parser.add_subparsers(help='sub-command help', dest=MODEL_TYPE)
+    subparsers = parser.add_subparsers(help='sub-command help', dest="model_type")
 
     # Creates the parser for a nn model
     nn_parser = subparsers.add_parser(NN_MODEL, help='nn_model help')
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     strategy = DefaultAstarStrategy()
     graph = WikiGraph()
 
-    if MODEL_TYPE == NN_MODEL:
+    if args.model_type == NN_MODEL:
         embedder = load_embedder_from_model_path(args.model)
         model = load_model_from_path(args.model)
         heuristic = NNHeuristic(model, embedder)
