@@ -70,11 +70,11 @@ def find_at_distance(graph, source_node, desired_distance):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_records', '-n', help='Number of records for training, validation, test sets', nargs=3,
+    parser.add_argument('--num-records', '-n', help='Number of records for training, validation, test sets', nargs=3,
                         type=int, required=True)
     parser.add_argument('--seed', '-s', type=int, help='Seed used by random generator')
     parser.add_argument('--out', '-o', required=True, help='Output dir path')
-    parser.add_argument('--max_distance', '-d', type=int, default=20, help='Maximum distance to search for')
+    parser.add_argument('--max-distance', '-d', type=int, default=20, help='Maximum distance to search for')
     args = parser.parse_args()
 
     if args.max_distance < 1:
