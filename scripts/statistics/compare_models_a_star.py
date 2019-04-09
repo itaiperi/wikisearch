@@ -24,15 +24,13 @@ DISTANCE = "Distance"
 def generate_models_results(model_dir_paths):
     models_df_local = pd.DataFrame()
 
-    # TODO: after running the models again on astar, uncomment the separator
-    model_df = pd.read_csv(os.path.join(model_dir_paths[0], MODEL_ASTAR_CSV))#, sep=CSV_SEPARATOR)
+    model_df = pd.read_csv(os.path.join(model_dir_paths[0], MODEL_ASTAR_CSV), sep=CSV_SEPARATOR)
     models_df_local[f"{BFS}_{DEVELOPED}"] = model_df[BFS_DEVELOPED]
     models_df_local[f"{BFS}_{TIME}"] = model_df[BFS_TIME]
     models_df_local[f"{BFS}_{DISTANCE}"] = model_df[BFS_DIST]
 
     for model_dir_path, model_dir_name in zip(model_dir_paths, model_dir_names):
-        # TODO: after running the models again on astar, uncomment the separator
-        model_df = pd.read_csv(os.path.join(model_dir_path, MODEL_ASTAR_CSV))#, sep=CSV_SEPARATOR)
+        model_df = pd.read_csv(os.path.join(model_dir_path, MODEL_ASTAR_CSV), sep=CSV_SEPARATOR)
         models_df_local[f"{model_dir_name}_{DEVELOPED}"] = model_df[NN_DEVELOPED]
         models_df_local[f"{model_dir_name}_{TIME}"] = model_df[NN_TIME]
         models_df_local[f"{model_dir_name}_{DISTANCE}"] = model_df[NN_DIST]
