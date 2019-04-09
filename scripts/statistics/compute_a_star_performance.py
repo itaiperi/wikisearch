@@ -17,6 +17,7 @@ from scripts.utils import print_progress_bar, timing
 from wikisearch.astar import Astar
 from wikisearch.consts.mongo import CSV_SEPARATOR
 from wikisearch.costs.uniform_cost import UniformCost
+from wikisearch.embeddings import AVAILABLE_EMBEDDINGS
 from wikisearch.graph import WikiGraph
 from wikisearch.heuristics import BFSHeuristic
 from wikisearch.heuristics.nn_heuristic import NNHeuristic
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     # Creates the parser for a distance heuristic model
     dist_h_parser = subparsers.add_parser(FUNC_MODEL, help='func_model help')
-    dist_h_parser.add_argument('-e', '--embedding', required=True, help='The embedder name')
+    dist_h_parser.add_argument('-e', '--embedding', choices=AVAILABLE_EMBEDDINGS, required=True, help='The embedder name')
     dist_h_parser.add_argument('-dh', '--distance-heuristic', required=True, help='The heuristic distance method')
     dist_h_parser.add_argument('-o', '--out', required=True, help='Output directory')
 
