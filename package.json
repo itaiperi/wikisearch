@@ -1,0 +1,30 @@
+{
+  "name": "wikisearch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "wikisearch/utils/wikidump_to_mongo.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "assert": "^1.4.1",
+    "dumpster-dive": "^5.1.1",
+    "mongodb": "^3.1.13",
+    "pycollections": "^0.9.0",
+    "wtf_wikipedia": "^7.2.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noodlez04/wikisearch.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noodlez04/wikisearch/issues"
+  },
+  "homepage": "https://github.com/noodlez04/wikisearch#readme"
+}
